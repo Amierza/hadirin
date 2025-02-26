@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
 
@@ -12,20 +11,16 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>{
-  
+class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 2), (){
-      Navigator.pushNamedAndRemoveUntil(
-        context, '/login', (route) => false
-        );
-      },
-    );
+    Timer(const Duration(seconds: 10), () {
+      Navigator.pushReplacementNamed(context, '/login');
+    });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,10 +34,8 @@ class _SplashPageState extends State<SplashPage>{
               height: 144,
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage(
-                    'assets/logo_white.png',
-                  ),
-                )
+                  image: AssetImage('assets/logo_white.png'),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -51,7 +44,7 @@ class _SplashPageState extends State<SplashPage>{
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 30,
                 fontWeight: extraBold,
-                color: backgroundColor
+                color: backgroundColor,
               ),
             ),
           ],
