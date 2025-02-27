@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/register_page.dart';
 import 'package:frontend/pages/splash_page.dart';
-import 'package:frontend/pages/sign_in_page.dart'; // Import SignInPage
+import 'package:frontend/pages/sign_in_page.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const SplashPage(),
         '/login': (context) => SignInPage(),
+        '/register': (context) => RegisterPage(),
       },
     );
   }
