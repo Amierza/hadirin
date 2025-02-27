@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:frontend/shared/theme.dart'; // Import your theme file
+import 'package:frontend/shared/theme.dart';
+import 'package:frontend/pages/forget_password_page.dart';
 
 class SignInController extends GetxController {
   var obscureText = true.obs;
@@ -114,7 +115,9 @@ class SignInPage extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Get.to(() => ForgetPasswordPage());
+                },
                 child: Text(
                   'Forgot Password?',
                   style: GoogleFonts.plusJakartaSans(
@@ -127,7 +130,6 @@ class SignInPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Login Button
             SizedBox(
               width: double.infinity,
               height: 50,
