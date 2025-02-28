@@ -7,7 +7,10 @@ import (
 
 func Migrate(db *gorm.DB) error {
 	if err := db.AutoMigrate(
-		&entity.User{},
+		&entity.Position{},
+		&entity.Employee{},
+		&entity.Presence{},
+		&entity.Permission{},
 	); err != nil {
 		return err
 	}
