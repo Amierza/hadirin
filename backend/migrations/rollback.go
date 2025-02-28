@@ -7,7 +7,10 @@ import (
 
 func Rollback(db *gorm.DB) error {
 	tables := []interface{}{
-		&entity.User{},
+		&entity.Permission{},
+		&entity.Presence{},
+		&entity.Employee{},
+		&entity.Position{},
 	}
 
 	for _, table := range tables {
