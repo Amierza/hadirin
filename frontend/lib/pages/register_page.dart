@@ -3,6 +3,7 @@ import 'package:frontend/controllers/register_controller.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:frontend/pages/sign_in_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -39,7 +40,6 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       body: SafeArea(
         child: Center(
-         
           child: SingleChildScrollView(
             child: Column(
               children: [
@@ -311,8 +311,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         GestureDetector(
           onTap: () {
-            // Navigate to login page
-            // Get.to(() => LoginPage());
+            Get.to(() => SignInPage());
           },
           child: Text(
             "Login",
