@@ -141,7 +141,7 @@ class _RegisterPageState extends State<RegisterPage> {
               child: DropdownButton<String>(
                 isExpanded: true,
                 hint: Text(
-                  'Pilih Role Pekerjaan',
+                  'Pilih Posisi Pekerjaan',
                   style: TextStyle(color: primaryTextColor),
                 ),
                 value: selectedRole,
