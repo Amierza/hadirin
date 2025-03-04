@@ -10,7 +10,7 @@ import (
 
 type Employee struct {
 	ID          uuid.UUID  `gorm:"type:uuid;primaryKey" json:"employee_id"`
-	PositionID  *uuid.UUID `gorm:"type:uuid" json:"position_id"`
+	PositionID  uuid.UUID  `gorm:"type:uuid" json:"position_id"`
 	Position    Position   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Name        string     `gorm:"not null" json:"employee_name"`
 	Email       string     `gorm:"unique; not null" json:"employee_email"`
@@ -31,6 +31,7 @@ func (e *Employee) BeforeCreate(tx *gorm.DB) error {
 	}()
 
 	e.ID = uuid.New()
+	e.Role = 0
 
 	var err error
 	e.Password, err = helpers.HashPassword(e.Password)

@@ -23,15 +23,15 @@ func main() {
 	}
 
 	var (
-		jwtService  = service.NewJWTService()
-		userRepo    = repository.NewUserRepository(db)
-		userService = service.NewUserService(userRepo, jwtService)
-		userHandler = handler.NewUserHandler(userService)
+		jwtService      = service.NewJWTService()
+		employeeRepo    = repository.NewEmployeeRepository(db)
+		employeeService = service.NewEmployeeService(employeeRepo, jwtService)
+		employeeHandler = handler.NewEmployeeHandler(employeeService)
 	)
 
 	server := gin.Default()
 
-	routes.User(server, userHandler, jwtService)
+	routes.Employee(server, employeeHandler, jwtService)
 
 	server.Static("/assets", "./assets")
 

@@ -10,13 +10,13 @@ import (
 
 type (
 	IJWTService interface {
-		GenerateToken(userID string) (string, string, error)
+		GenerateToken(employeeID string) (string, string, error)
 		ValidateToken(token string) (*jwt.Token, error)
-		GetUserIDByToken(tokenString string) (string, error)
+		GetEmployeeIDByToken(tokenString string) (string, error)
 	}
 
 	jwtCustomClaim struct {
-		UserID string `json:"user_id"`
+		EmployeeID string `json:"employee_id"`
 		jwt.RegisteredClaims
 	}
 
@@ -42,9 +42,9 @@ func getSecretKey() string {
 	return secretKey
 }
 
-func (j *JWTService) GenerateToken(userID string) (string, string, error) {
+func (j *JWTService) GenerateToken(employeeID string) (string, string, error) {
 	accessClaims := jwtCustomClaim{
-		userID,
+		employeeID,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * 120)),
 			Issuer:    j.issuer,
@@ -59,7 +59,7 @@ func (j *JWTService) GenerateToken(userID string) (string, string, error) {
 	}
 
 	refreshClaims := jwtCustomClaim{
-		userID,
+		employeeID,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * 3600 * 24 * 7)),
 			Issuer:    j.issuer,
@@ -93,7 +93,7 @@ func (j *JWTService) ValidateToken(tokenString string) (*jwt.Token, error) {
 	return token, err
 }
 
-func (j *JWTService) GetUserIDByToken(tokenString string) (string, error) {
+func (j *JWTService) GetEmployeeIDByToken(tokenString string) (string, error) {
 	token, err := j.ValidateToken(tokenString)
 	if err != nil {
 		return "", fmt.Errorf("error validating token: %v", err)
@@ -104,7 +104,7 @@ func (j *JWTService) GetUserIDByToken(tokenString string) (string, error) {
 		return "", fmt.Errorf("invalid token: %v", err)
 	}
 
-	userID := fmt.Sprintf("%v", claims["user_id"])
+	employeeID := fmt.Sprintf("%v", claims["employee_id"])
 
-	return userID, nil
+	return employeeID, nil
 }
