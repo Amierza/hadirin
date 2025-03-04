@@ -15,9 +15,11 @@ const (
 	MESSAGE_FAILED_TOKEN_NOT_VALID     = "gagal, token tidak valid"
 	MESSAGE_FAILED_TOKEN_DENIED_ACCESS = "gagal, akses token ditolak"
 	MESSAGE_FAILED_REGISTER_EMPLOYEE   = "gagal mendaftarkan karyawan"
+	MESSAGE_FAILED_LOGIN_EMPLOYEE      = "gagal login karyawan"
 
 	// success
 	MESSAGE_SUCCESS_REGISTER_EMPLOYEE = "berhasil mendaftarkan karyawan"
+	MESSAGE_SUCCESS_LOGIN_EMPLOYEE    = "berhasil login karyawan"
 )
 
 var (
@@ -29,6 +31,9 @@ var (
 	ErrEmailAlreadyExists = errors.New("email sudah terdaftar")
 	ErrRegisterEmployee   = errors.New("gagal mendaftarkan karyawan")
 	ErrPositionNotFound   = errors.New("gagal mendapatkan position")
+	ErrEmailNotRegistered = errors.New("gagal, email tidak terdaftar")
+	ErrPasswordNotMatch   = errors.New("gagal, password salah")
+	ErrGenerateToken      = errors.New("gagal membuat token")
 )
 
 type (
@@ -45,5 +50,15 @@ type (
 		Email    string          `json:"employee_email"`
 		Password string          `json:"employee_password"`
 		Position entity.Position `json:"position"`
+	}
+
+	EmployeeLoginRequest struct {
+		Email    string `json:"email" form:"email"`
+		Password string `json:"password" form:"password"`
+	}
+
+	EmployeeLoginResponse struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 )

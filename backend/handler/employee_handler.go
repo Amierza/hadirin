@@ -12,6 +12,7 @@ import (
 type (
 	IEmployeeHandler interface {
 		Register(ctx *gin.Context)
+		Login(ctx *gin.Context)
 	}
 
 	EmployeeHandler struct {
@@ -41,5 +42,24 @@ func (eh *EmployeeHandler) Register(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_REGISTER_EMPLOYEE, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (eh *EmployeeHandler) Login(ctx *gin.Context) {
+	var payload dto.EmployeeLoginRequest
+	if err := ctx.ShouldBind(&payload); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := eh.employeeService.Login(ctx.Request.Context(), payload)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_LOGIN_EMPLOYEE, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_LOGIN_EMPLOYEE, result)
 	ctx.JSON(http.StatusOK, res)
 }
