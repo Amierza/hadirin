@@ -39,7 +39,7 @@ func Authentication(jwtService service.IJWTService) gin.HandlerFunc {
 			return
 		}
 
-		userID, err := jwtService.GetUserIDByToken(authHeader)
+		employeeID, err := jwtService.GetEmployeeIDByToken(authHeader)
 		if err != nil {
 			res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_PROSES_REQUEST, err.Error(), nil)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
@@ -47,7 +47,7 @@ func Authentication(jwtService service.IJWTService) gin.HandlerFunc {
 		}
 
 		ctx.Set("Authorization", authHeader)
-		ctx.Set("user_id", userID)
+		ctx.Set("employee_id", employeeID)
 		ctx.Next()
 	}
 }
