@@ -10,5 +10,6 @@ func Employee(route *gin.Engine, employeeHandler handler.IEmployeeHandler, jwtSe
 	routes := route.Group("/api/v1/employee")
 	{
 		routes.POST("/register", employeeHandler.Register)
+		routes.POST("/login", employeeHandler.Login)
 	}
 }

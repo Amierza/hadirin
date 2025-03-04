@@ -6,6 +6,7 @@ import (
 
 	"github.com/Amierza/hadirin/backend/dto"
 	"github.com/Amierza/hadirin/backend/entity"
+	"github.com/Amierza/hadirin/backend/helpers"
 	"github.com/Amierza/hadirin/backend/repository"
 	"github.com/google/uuid"
 )
@@ -13,6 +14,7 @@ import (
 type (
 	IEmployeeService interface {
 		Register(ctx context.Context, req dto.EmployeeRegisterRequest) (dto.EmployeeRegisterResponse, error)
+		Login(ctx context.Context, req dto.EmployeeLoginRequest) (dto.EmployeeLoginResponse, error)
 	}
 
 	EmployeeService struct {
@@ -80,4 +82,34 @@ func (es *EmployeeService) Register(ctx context.Context, req dto.EmployeeRegiste
 func isValidEmail(email string) bool {
 	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return re.MatchString(email)
+}
+
+func (eh *EmployeeService) Login(ctx context.Context, req dto.EmployeeLoginRequest) (dto.EmployeeLoginResponse, error) {
+	if req.Email == "" || req.Password == "" {
+		return dto.EmployeeLoginResponse{}, dto.ErrFieldIsEmpty
+	}
+
+	if !isValidEmail(req.Email) {
+		return dto.EmployeeLoginResponse{}, dto.ErrInvalidEmail
+	}
+
+	employee, flag, err := eh.employeeRepo.CheckEmail(ctx, nil, req.Email)
+	if err != nil || !flag {
+		return dto.EmployeeLoginResponse{}, dto.ErrEmailNotRegistered
+	}
+
+	checkPassword, err := helpers.CheckPassword(employee.Password, []byte(req.Password))
+	if err != nil || !checkPassword {
+		return dto.EmployeeLoginResponse{}, dto.ErrPasswordNotMatch
+	}
+
+	accessToken, refreshToken, err := eh.jwtService.GenerateToken(employee.ID.String())
+	if err != nil {
+		return dto.EmployeeLoginResponse{}, dto.ErrGenerateToken
+	}
+
+	return dto.EmployeeLoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
 }
