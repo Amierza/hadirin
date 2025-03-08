@@ -5,6 +5,7 @@ import 'package:frontend/pages/sign_in_page.dart';
 import 'package:frontend/pages/forget_password_page.dart';
 import 'package:frontend/pages/rename_password_page.dart';
 import 'package:frontend/pages/register_page.dart';
+import 'package:frontend/pages/home_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/forget-password', page: () => ForgetPasswordPage()),
         GetPage(name: '/rename-password', page: () => RenamePasswordPage()),
         GetPage(name: '/register', page: () => RegisterPage()),
+        GetPage(name: '/home', page: () => HomePage()),
       ],
     );
   }
