@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:frontend/widget/navbar.dart';
-import 'package:frontend/widget/cardabsen.dart';
+import 'package:frontend/widgets/navbar.dart';
+import 'package:frontend/widgets/cardabsen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
