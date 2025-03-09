@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/presence_page.dart';
 import 'package:get/get.dart';
 import 'package:frontend/pages/splash_page.dart';
 import 'package:frontend/pages/sign_in_page.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/forget-password', page: () => ForgetPasswordPage()),
         GetPage(name: '/rename-password', page: () => RenamePasswordPage()),
         GetPage(name: '/register', page: () => RegisterPage()),
+        GetPage(name: '/presence', page: () => PresencePage()),
         GetPage(name: '/home', page: () => HomePage()),
       ],
     );

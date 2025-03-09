@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/home_page.dart';
 import 'package:frontend/shared/theme.dart';
+import 'package:frontend/pages/presence_page.dart';
+import 'package:get/get.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final Function(int) onItemTapped;
@@ -20,7 +23,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-            onPressed: () => onItemTapped(0),
+            onPressed: () {
+              onItemTapped(0);
+              Get.to(() => HomePage());
+            },
             icon: Icon(
               Icons.home,
               size: 30,
@@ -28,7 +34,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () => onItemTapped(1),
+            onPressed: () {
+              onItemTapped(1);
+              Get.to(() => PresencePage());
+            },
             icon: Icon(
               Icons.camera_alt,
               size: 30,
