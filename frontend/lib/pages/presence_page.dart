@@ -20,10 +20,10 @@ class _PresencePageState extends State<PresencePage> {
   @override
   void initState() {
     super.initState();
-    _openCamera();
+    _openCamera(); 
   }
-
-  Future<void> _openCamera() async {
+  
+Future<void> _openCamera() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
@@ -75,28 +75,30 @@ class _PresencePageState extends State<PresencePage> {
               children: [
                 GestureDetector(
                   onTap: _openCamera,
-                  child:
-                      _image != null
-                          ? ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.file(
-                              _image!,
-                              height: 250,
-                              width: 350,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                          : Container(
+                  child: _image != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.file(
+                            _image!,
                             height: 250,
                             width: 350,
-                            decoration: BoxDecoration(
-                              border: Border.all(),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Center(
-                              child: Icon(Icons.camera_alt_rounded, size: 50),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Container(
+                          height: 250,
+                          width: 350,
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              size: 50,
                             ),
                           ),
+                        ),
                 ),
                 const SizedBox(height: 20),
                 Obx(() {
@@ -145,8 +147,7 @@ class _PresencePageState extends State<PresencePage> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                   subdomains: ['a', 'b', 'c'],
                 ),
                 MarkerLayer(
@@ -171,3 +172,4 @@ class _PresencePageState extends State<PresencePage> {
     );
   }
 }
+
