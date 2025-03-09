@@ -23,7 +23,7 @@ class _PresencePageState extends State<PresencePage> {
     _openCamera(); 
   }
   
-  Future<void> _openCamera() async {
+Future<void> _openCamera() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
@@ -172,3 +172,4 @@ class _PresencePageState extends State<PresencePage> {
     );
   }
 }
+

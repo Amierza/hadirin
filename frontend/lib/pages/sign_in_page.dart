@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/pages/forget_password_page.dart';
 import 'package:frontend/pages/register_page.dart';
+import 'package:frontend/pages/home_page.dart';
 
 class SignInController extends GetxController {
   var obscureText = true.obs;
@@ -167,7 +168,9 @@ class _SignInPageState extends State<SignInPage> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {}
+                    if (_formKey.currentState!.validate()) {
+                      Get.to(() => HomePage());
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
