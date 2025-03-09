@@ -13,7 +13,15 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final RegisterController controller = Get.put(RegisterController());
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   String? selectedRole;
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   final List<String> roles = [
     'Manager',
     'Developer',
@@ -21,10 +29,6 @@ class _RegisterPageState extends State<RegisterPage> {
     'Admin',
     'Marketing',
   ];
-
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
 
   @override
   void dispose() {
@@ -34,44 +38,90 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Masukkan email anda';
+    }
+    final RegExp emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Masukkan email yang benar';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Masukkan password anda';
+    }
+    if (value.length < 8) {
+      return 'Password minimal 8 karakter';
+    }
+    if (value.length > 20) {
+      return 'Password tidak boleh lebih dari 20 karakter';
+    }
+    return null;
+  }
+
+  void _register() {
+    if (_formKey.currentState!.validate() && selectedRole != null) {
+      // controller.register(nameController.text, emailController.text, passwordController.text, selectedRole!);
+    } else {
+      Get.snackbar(
+        'Error',
+        'Semua field harus diisi dengan benar',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final RegisterController controller = Get.put(RegisterController());
     return Scaffold(
+      backgroundColor: backgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Logo
-                Image.asset('assets/logo_green.png', width: 150, height: 150),
-
-                // Welcome text
-                const SizedBox(height: 20),
-                const Text(
-                  'Selamat datang di Hadirin',
-                  style: TextStyle(
-                    fontFamily: 'PlusJakartaSans',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+            padding: const EdgeInsets.symmetric(horizontal: 35.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Image.asset('assets/logo_green.png', width: 150, height: 150),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Selamat datang di Hadirin',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 20,
+                      fontWeight: extraBold,
+                      color: primaryTextColor,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                const Text('Absen dengan deteksi wajah bersama hadirin'),
-
-                // Form fields
-                const SizedBox(height: 20),
-                _buildNameField(),
-                const SizedBox(height: 20),
-                _buildRoleDropdown(),
-                const SizedBox(height: 20),
-                _buildEmailField(),
-                const SizedBox(height: 20),
-                _buildPasswordField(controller),
-                const SizedBox(height: 20),
-                _buildCreateAccountButton(),
-                const SizedBox(height: 10),
-                _buildAlreadyHaveAccountText(),
-              ],
+                  const SizedBox(height: 10),
+                  Text(
+                    'Absen dengan deteksi wajah bersama Hadirin',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: bold,
+                      color: tertiaryTextColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildNameField(),
+                  const SizedBox(height: 20),
+                  _buildRoleDropdown(),
+                  const SizedBox(height: 20),
+                  _buildEmailField(),
+                  const SizedBox(height: 20),
+                  _buildPasswordField(),
+                  const SizedBox(height: 20),
+                  _buildCreateAccountButton(),
+                  const SizedBox(height: 10),
+                  _buildAlreadyHaveAccountText(),
+                ],
+              ),
             ),
           ),
         ),
@@ -80,33 +130,58 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildNameField() {
+    return _buildInputField(
+      label: 'Nama',
+      controller: nameController,
+      hintText: 'Masukkan nama anda',
+      hintStyle: TextStyle(color: tertiaryTextColor),
+    );
+  }
+
+  Widget _buildEmailField() {
+    return _buildInputField(
+      label: 'E-mail',
+      controller: emailController,
+      hintText: 'Masukkan email anda',
+      hintStyle: TextStyle(color: tertiaryTextColor),
+      keyboardType: TextInputType.emailAddress,
+      validator: _validateEmail,
+    );
+  }
+
+  Widget _buildPasswordField() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 35.0),
+      padding: const EdgeInsets.only(bottom: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Nama',
+            'Password',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              fontWeight: bold,
+              fontWeight: extraBold,
               color: primaryTextColor,
             ),
           ),
           const SizedBox(height: 8),
-          TextFormField(
-            controller: nameController,
-            decoration: InputDecoration(
-              hintText: 'Enter Your Name',
-              hintStyle: TextStyle(color: primaryTextColor),
-              border: UnderlineInputBorder(
-                borderSide: BorderSide(color: secondaryBackgroundColor),
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: secondaryBackgroundColor),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: primaryColor, width: 2),
+          Obx(
+            () => TextFormField(
+              controller: passwordController,
+              obscureText: controller.obscureText.value,
+              validator: _validatePassword,
+              decoration: InputDecoration(
+                hintText: "Masukkan password",
+                hintStyle: TextStyle(color: tertiaryTextColor),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.obscureText.value
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: primaryTextColor,
+                  ),
+                  onPressed: controller.togglePasswordVisibility,
+                ),
+                border: const UnderlineInputBorder(),
               ),
             ),
           ),
@@ -116,184 +191,57 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildRoleDropdown() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 35.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Forgot Password?',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              fontWeight: bold,
-              color: primaryTextColor,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Pilih Posisi',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: extraBold,
+            color: primaryTextColor,
           ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: secondaryBackgroundColor),
-              ),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                isExpanded: true,
-                hint: Text(
-                  'Pilih Posisi Pekerjaan',
-                  style: TextStyle(color: primaryTextColor),
-                ),
-                value: selectedRole,
-                icon: const Icon(Icons.arrow_drop_down),
-                iconSize: 24,
-                elevation: 16,
-                style: TextStyle(color: primaryTextColor),
-                items:
-                    roles.map((String role) {
-                      return DropdownMenuItem<String>(
-                        value: role,
-                        child: Text(role),
-                      );
-                    }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedRole = newValue;
-                  });
-                },
-              ),
-            ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: selectedRole,
+          decoration: const InputDecoration(border: UnderlineInputBorder()),
+          hint: Text(
+            'Pilih Posisi Pekerjaan',
+            style: TextStyle(color: tertiaryTextColor),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmailField() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 35.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'E-mail',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              fontWeight: bold,
-              color: primaryTextColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: emailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              hintText: 'Enter Your E-mail',
-              hintStyle: TextStyle(color: primaryTextColor),
-              border: UnderlineInputBorder(
-                borderSide: BorderSide(color: secondaryBackgroundColor),
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: secondaryBackgroundColor),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: primaryColor, width: 2),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPasswordField(RegisterController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 35.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Password',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              fontWeight: bold,
-              color: primaryTextColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Obx(
-            () => TextFormField(
-              controller: passwordController,
-              obscureText: controller.obscureText.value,
-              decoration: InputDecoration(
-                hintText: "Masukkan Password",
-                hintStyle: TextStyle(color: primaryTextColor),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    controller.obscureText.value
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    color:
-                        controller.obscureText.value
-                            ? primaryTextColor
-                            : primaryTextColor,
-                  ),
-                  onPressed: controller.togglePasswordVisibility,
-                ),
-                border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: secondaryBackgroundColor),
-                ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: secondaryBackgroundColor),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: primaryColor, width: 2),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+          items:
+              roles.map((String role) {
+                return DropdownMenuItem<String>(value: role, child: Text(role));
+              }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              selectedRole = newValue;
+            });
+          },
+          validator: (value) => value == null ? 'Pilih posisi pekerjaan' : null,
+        ),
+      ],
     );
   }
 
   Widget _buildCreateAccountButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 35.0),
-      child: GestureDetector(
-        onTap: () {
-          // Implementasi fungsi register
-          if (nameController.text.isEmpty ||
-              emailController.text.isEmpty ||
-              passwordController.text.isEmpty ||
-              selectedRole == null) {
-            Get.snackbar(
-              'Error',
-              'Semua field harus diisi',
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-            );
-            return;
-          }
-
-          // Panggil fungsi register di controller
-          // controller.register(nameController.text, emailController.text, passwordController.text, selectedRole!);
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 13),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: primaryColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Center(
-            child: Text(
-              "Create Account",
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: bold,
-                color: secondaryTextColor,
-              ),
+    return GestureDetector(
+      onTap: _register,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 13),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: primaryColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Center(
+          child: Text(
+            "Create Account",
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: extraBold,
+              color: backgroundColor,
             ),
           ),
         ),
@@ -310,16 +258,46 @@ class _RegisterPageState extends State<RegisterPage> {
           style: TextStyle(fontFamily: 'PlusJakartaSans'),
         ),
         GestureDetector(
-          onTap: () {
-            Get.to(() => SignInPage());
-          },
+          onTap: () => Get.to(() => const SignInPage()),
           child: Text(
             "Login",
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              fontWeight: bold,
+              fontWeight: extraBold,
               color: primaryColor,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    String? hintText,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator, required TextStyle hintStyle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: extraBold,
+            color: primaryTextColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: const UnderlineInputBorder(),
           ),
         ),
       ],

@@ -3,7 +3,6 @@ import 'package:frontend/pages/presence_page.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/shared/theme.dart';
-import 'package:frontend/pages/forget_password_page.dart';
 import 'package:frontend/pages/register_page.dart';
 import 'package:frontend/pages/home_page.dart';
 
@@ -209,7 +208,7 @@ class _SignInPageState extends State<SignInPage> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: primaryTextColor,
+                        color: primaryColor,
                       ),
                     ),
                   ),
