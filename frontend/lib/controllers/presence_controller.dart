@@ -4,17 +4,19 @@ import 'package:get/get.dart';
 class PresenceController extends GetxController {
   var isLoading = false.obs;
   var isCheckedIn = false.obs;
+  var userPosition = Rx<Position?>(null); // Untuk menyimpan posisi pengguna
 
   // Koordinat tujuan Unair Kampus C
-  final double targetLatitude = -7.275613; 
-  final double targetLongitude = 112.791183; 
-  final double radiusMeter = 200; 
+  final double targetLatitude = -7.266422;
+  final double targetLongitude = 112.783539;
+  final double radiusMeter = 200;
 
-  Future<Position?> _getUserLocation() async {
+  // Cek izin lokasi dan aktifkan GPS
+  Future<void> checkLocationPermission() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       Get.snackbar('Error', 'GPS tidak aktif. Silakan aktifkan GPS.');
-      return null;
+      return;
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
@@ -22,29 +24,45 @@ class PresenceController extends GetxController {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         Get.snackbar('Error', 'Izin lokasi ditolak.');
-        return null;
+        return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       Get.snackbar('Error', 'Izin lokasi ditolak permanen.');
-      return null;
+      return;
     }
 
-    return await Geolocator.getCurrentPosition();
+    await _getUserLocation();
   }
 
+  // Ambil posisi pengguna
+  Future<void> _getUserLocation() async {
+    try {
+      isLoading.value = true;
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      userPosition.value = position;
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal mendapatkan lokasi: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Hitung jarak antara posisi pengguna dan target
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
   }
 
+  // Cek apakah pengguna berada dalam radius
   Future<bool> _isWithinRadius() async {
-    Position? userPosition = await _getUserLocation();
-    if (userPosition == null) return false;
+    if (userPosition.value == null) return false;
 
     double distance = _calculateDistance(
-      userPosition.latitude,
-      userPosition.longitude,
+      userPosition.value!.latitude,
+      userPosition.value!.longitude,
       targetLatitude,
       targetLongitude,
     );
@@ -52,6 +70,7 @@ class PresenceController extends GetxController {
     return distance <= radiusMeter;
   }
 
+  // Logika check-in
   Future<void> checkIn() async {
     isLoading.value = true;
     bool withinRadius = await _isWithinRadius();
@@ -67,6 +86,7 @@ class PresenceController extends GetxController {
     isLoading.value = false;
   }
 
+  // Logika check-out
   Future<void> checkOut() async {
     isLoading.value = true;
     bool withinRadius = await _isWithinRadius();
