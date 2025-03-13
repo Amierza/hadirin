@@ -4,10 +4,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:frontend/controllers/presence_controller.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:get/get.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart' as latLng2;
 
 class PresencePage extends StatefulWidget {
+  const PresencePage({super.key});
+
   @override
   State<PresencePage> createState() => _PresencePageState();
 }
@@ -20,10 +23,10 @@ class _PresencePageState extends State<PresencePage> {
   @override
   void initState() {
     super.initState();
-    _openCamera(); 
+    presenceController.checkLocationPermission();
   }
-  
-Future<void> _openCamera() async {
+
+  Future<void> _openCamera() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
@@ -32,36 +35,52 @@ Future<void> _openCamera() async {
     }
   }
 
-  bool _isWithinCheckInTime() {
-    final now = DateTime.now();
-    final startTime = DateTime(now.year, now.month, now.day, 6, 0);
-    final endTime = DateTime(now.year, now.month, now.day, 10, 0);
-    return now.isAfter(startTime) && now.isBefore(endTime);
-  }
-
   void _submitCheckIn() {
     if (_image == null) {
-      Get.snackbar('Error', 'Silakan ambil foto terlebih dahulu');
+      Get.snackbar('Error', 'Silahkan ambil foto terlebih dahulu');
       return;
     }
-    presenceController.isLoading.value = true;
-    Future.delayed(Duration(seconds: 2), () {
-      presenceController.isLoading.value = false;
-      Get.snackbar('Sukses', 'Absen masuk berhasil');
-    });
+    presenceController.checkIn();
   }
 
   void _submitCheckOut() {
     if (_image == null) {
-      Get.snackbar('Error', 'Silakan ambil foto terlebih dahulu');
+      Get.snackbar('Error', 'Silahkan ambil foto terlebih dahulu');
       return;
     }
-    presenceController.isLoading.value = true;
-    Future.delayed(Duration(seconds: 2), () {
-      presenceController.isLoading.value = false;
-      Get.snackbar('Sukses', 'Absen keluar berhasil');
-    });
+    presenceController.checkOut();
   }
+
+  // bool _isWithinCheckInTime() {
+  //   final now = DateTime.now();
+  //   final startTime = DateTime(now.year, now.month, now.day, 6, 0);
+  //   final endTime = DateTime(now.year, now.month, now.day, 10, 0);
+  //   return now.isAfter(startTime) && now.isBefore(endTime);
+  // }
+
+  // void _submitCheckIn() {
+  //   if (_image == null) {
+  //     Get.snackbar('Error', 'Silakan ambil foto terlebih dahulu');
+  //     return;
+  //   }
+  //   presenceController.isLoading.value = true;
+  //   Future.delayed(Duration(seconds: 2), () {
+  //     presenceController.isLoading.value = false;
+  //     Get.snackbar('Sukses', 'Absen masuk berhasil');
+  //   });
+  // }
+
+  // void _submitCheckOut() {
+  //   if (_image == null) {
+  //     Get.snackbar('Error', 'Silakan ambil foto terlebih dahulu');
+  //     return;
+  //   }
+  //   presenceController.isLoading.value = true;
+  //   Future.delayed(Duration(seconds: 2), () {
+  //     presenceController.isLoading.value = false;
+  //     Get.snackbar('Sukses', 'Absen keluar berhasil');
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -75,30 +94,28 @@ Future<void> _openCamera() async {
               children: [
                 GestureDetector(
                   onTap: _openCamera,
-                  child: _image != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.file(
-                            _image!,
+                  child:
+                      _image != null
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.file(
+                              _image!,
+                              height: 250,
+                              width: 350,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                          : Container(
                             height: 250,
                             width: 350,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Container(
-                          height: 250,
-                          width: 350,
-                          decoration: BoxDecoration(
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.camera_alt_rounded,
-                              size: 50,
+                            decoration: BoxDecoration(
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: Icon(Icons.camera_alt_rounded, size: 50),
                             ),
                           ),
-                        ),
                 ),
                 const SizedBox(height: 20),
                 Obx(() {
@@ -140,36 +157,85 @@ Future<void> _openCamera() async {
             ),
           ),
           Expanded(
-            child: FlutterMap(
-              options: MapOptions(
-                initialCenter: LatLng(-7.275613, 112.791183),
-                initialZoom: 15,
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: ['a', 'b', 'c'],
+            child: Obx(() {
+              final userPosition = presenceController.userPosition.value;
+              return FlutterMap(
+                options: MapOptions(
+                  initialCenter: latLng2.LatLng(
+                    userPosition?.latitude ?? -7.266422,
+                    userPosition?.longitude ?? 112.783539,
+                  ),
+                  maxZoom: 18,
+                  minZoom: 16,
+                  initialZoom: 16,
                 ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      width: 80,
-                      height: 80,
-                      point: LatLng(-7.275613, 112.791183),
-                      child: Icon(
-                        Icons.location_on_sharp,
-                        size: 50,
-                        color: dangerColor,
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        width: 80,
+                        height: 80,
+                        point: latLng2.LatLng(-7.266422, 112.783539),
+                        child: Icon(
+                          Icons.location_on_sharp,
+                          size: 50,
+                          color: dangerColor,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                      if (userPosition != null)
+                        Marker(
+                          width: 80,
+                          height: 80,
+                          point: latLng2.LatLng(
+                            userPosition.latitude,
+                            userPosition.longitude,
+                          ),
+                          child: Icon(
+                            Icons.location_on_sharp,
+                            size: 50,
+                            color: primaryColor,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              );
+            }),
           ),
+          // Expanded(
+          //   child: FlutterMap(
+          //     options: MapOptions(
+          //       initialCenter: LatLng(-7.275613, 112.791183),
+          //       initialZoom: 15,
+          //     ),
+          //     children: [
+          //       TileLayer(
+          //         urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          //         subdomains: ['a', 'b', 'c'],
+          //       ),
+          //       MarkerLayer(
+          //         markers: [
+          //           Marker(
+          //             width: 80,
+          //             height: 80,
+          //             point: LatLng(-7.275613, 112.791183),
+          //             child: Icon(
+          //               Icons.location_on_sharp,
+          //               size: 50,
+          //               color: dangerColor,
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );
   }
 }
-

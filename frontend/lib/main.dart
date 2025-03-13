@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/presence_page.dart';
+import 'package:frontend/pages/profile_page.dart';
 import 'package:get/get.dart';
 import 'package:frontend/pages/splash_page.dart';
 import 'package:frontend/pages/sign_in_page.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/presence', page: () => PresencePage()),
         GetPage(name: '/home', page: () => HomePage()),
         GetPage(name: '/perizinan', page: () => HomePage()),
+        GetPage(name: '/profile', page: () => ProfilePage()),
       ],
     );
   }
