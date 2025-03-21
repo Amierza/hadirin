@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:frontend/shared/theme.dart';
-import 'package:frontend/widgets/appbar.dart';
+import 'package:frontend/widgets/dialog_signout.dart';
 import 'package:frontend/widgets/navbar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,7 +12,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: secondaryBackgroundColor,
-      appBar: CustomAppBar(title: 'Profile'),
+      appBar: AppBar(title: Text('Profile')),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
         child: Column(
@@ -101,14 +101,21 @@ class ProfilePage extends StatelessWidget {
                 foregroundColor: Colors.white,
                 iconColor: Colors.white,
               ),
-              onPressed: () {},
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return SignoutDialog();
+                  },
+                );
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Riwayat Absensi',
+                      'Log out',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: regular,

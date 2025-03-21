@@ -4,7 +4,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:frontend/controllers/presence_controller.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:get/get.dart';
-// import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart' as latLng2;
 

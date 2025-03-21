@@ -16,7 +16,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: IconButton(
             icon: const Icon(Icons.arrow_back, size: 26),
             onPressed: () {
-              if (Navigator.canPop(context)) {
+              {
                 Navigator.pop(context);
               }
             },
