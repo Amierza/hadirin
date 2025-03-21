@@ -89,22 +89,7 @@ class _PermissionPageState extends State<PermissionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: secondaryBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Perizinan',
-          style: GoogleFonts.plusJakartaSans(
-            color: Colors.black,
-            fontWeight: bold,
-            fontSize: 20,
-          ),
-        ),
-      ),
+      appBar: AppBar(title: Text('Perizinan')),
       body: SafeArea(
         child: Column(
           children: [
@@ -116,7 +101,7 @@ class _PermissionPageState extends State<PermissionPage> {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 itemCount: permissions.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, __) => const SizedBox(height: 20),
                 itemBuilder: (context, index) {
                   return PermissionCard(permission: permissions[index]);
                 },
@@ -200,7 +185,12 @@ class PermissionCard extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: primaryTextColor, spreadRadius: 1, blurRadius: 5),
+          BoxShadow(
+            color: primaryTextColor.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Column(

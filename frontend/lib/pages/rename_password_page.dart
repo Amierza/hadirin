@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/shared/theme.dart';
-import 'package:frontend/pages/sign_in_page.dart';
+import 'package:frontend/widgets/dialog_status.dart';
 
 class RenamePasswordPageController extends GetxController {
-  var obscureText = true.obs;
+  var obscureText1 = true.obs;
+  var obscureText2 = true.obs;
 
-  void togglePasswordVisibility() {
-    obscureText.value = !obscureText.value;
+  void togglePasswordVisibility1() {
+    obscureText1.value = !obscureText1.value;
+  }
+
+  void togglePasswordVisibility2() {
+    obscureText2.value = !obscureText2.value;
   }
 }
 
@@ -35,6 +40,16 @@ class _RenamePasswordPageState extends State<RenamePasswordPage> {
     if (value.length > 20) {
       return 'Password anda harus kurang dari 20 katarakter';
     }
+    return null;
+  }
+
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+
+  String? validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) return 'Masukkan ulang password';
+    if (value != passwordController.text) return 'Password tidak sama';
     return null;
   }
 
@@ -85,7 +100,8 @@ class _RenamePasswordPageState extends State<RenamePasswordPage> {
               ),
               Obx(
                 () => TextFormField(
-                  obscureText: controller.obscureText.value,
+                  controller: passwordController,
+                  obscureText: controller.obscureText1.value,
                   decoration: InputDecoration(
                     hintText: 'Enter New Password',
                     hintStyle: TextStyle(color: tertiaryTextColor),
@@ -94,15 +110,15 @@ class _RenamePasswordPageState extends State<RenamePasswordPage> {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        controller.obscureText.value
+                        controller.obscureText1.value
                             ? Icons.visibility_off
                             : Icons.visibility,
                         color:
-                            controller.obscureText.value
+                            controller.obscureText1.value
                                 ? tertiaryTextColor
                                 : primaryTextColor,
                       ),
-                      onPressed: controller.togglePasswordVisibility,
+                      onPressed: controller.togglePasswordVisibility1,
                     ),
                   ),
                   validator: validatePassword,
@@ -124,7 +140,8 @@ class _RenamePasswordPageState extends State<RenamePasswordPage> {
               ),
               Obx(
                 () => TextFormField(
-                  obscureText: controller.obscureText.value,
+                  controller: confirmPasswordController,
+                  obscureText: controller.obscureText2.value,
                   decoration: InputDecoration(
                     hintText: 'Confirm Your Password',
                     hintStyle: TextStyle(color: tertiaryTextColor),
@@ -133,18 +150,18 @@ class _RenamePasswordPageState extends State<RenamePasswordPage> {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        controller.obscureText.value
+                        controller.obscureText2.value
                             ? Icons.visibility_off
                             : Icons.visibility,
                         color:
-                            controller.obscureText.value
+                            controller.obscureText2.value
                                 ? tertiaryTextColor
                                 : primaryTextColor,
                       ),
-                      onPressed: controller.togglePasswordVisibility,
+                      onPressed: controller.togglePasswordVisibility2,
                     ),
                   ),
-                  validator: validatePassword,
+                  validator: validateConfirmPassword,
                 ),
               ),
               const SizedBox(height: 120),
@@ -156,7 +173,25 @@ class _RenamePasswordPageState extends State<RenamePasswordPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      Get.to(() => SignInPage());
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return StatusDialog(
+                            isSuccess: true,
+                            message: 'Your password is succesfully created',
+                          );
+                        },
+                      );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return StatusDialog(
+                            isSuccess: false,
+                            message: 'Please input the correct password',
+                          );
+                        },
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
