@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:frontend/pages/edit_profile_page.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/widgets/dialog_signout.dart';
 import 'package:frontend/widgets/navbar.dart';
@@ -54,7 +55,12 @@ class ProfilePage extends StatelessWidget {
                         foregroundColor: Colors.white,
                         iconColor: Colors.white,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => EditProfilePage()),
+                        );
+                      },
                       child: Row(
                         children: [
                           Icon(Icons.repeat, size: 18),
