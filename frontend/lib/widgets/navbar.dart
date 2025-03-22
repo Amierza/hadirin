@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/home_page.dart';
 import 'package:frontend/pages/perizinan_page.dart';
+import 'package:frontend/pages/profile_page.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/pages/presence_page.dart';
 import 'package:get/get.dart';
@@ -46,7 +47,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             ),
           ),
           IconButton(
-           onPressed: () {
+            onPressed: () {
               onItemTapped(1);
               Get.to(() => PerizinanPage());
             },
@@ -57,7 +58,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () => onItemTapped(3),
+            onPressed: () => {
+              onItemTapped(3),
+              Get.to(() => ProfilePage()),
+            },
             icon: Icon(
               Icons.person,
               size: 30,

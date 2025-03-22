@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/presence_history_page.dart';
 import 'package:frontend/shared/theme.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/widgets/navbar.dart';
 import 'package:frontend/widgets/cardabsen.dart';
@@ -127,7 +129,9 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        Get.to(() => PresenceHistoryPage());
+                                      },
                                       icon: Icon(
                                         Icons.arrow_forward_rounded,
                                         size: 30,

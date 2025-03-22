@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/profile_page.dart';
+import 'package:frontend/pages/forget_password_page.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/shared/theme.dart';
@@ -149,7 +149,7 @@ class _SignInPageState extends State<SignInPage> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    Get.to(() => ProfilePage());
+                    Get.to(() => ForgetPasswordPage());
                   },
                   child: Text(
                     'Forgot Password?',
