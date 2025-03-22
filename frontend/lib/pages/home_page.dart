@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/widgets/navbar.dart';
 import 'package:frontend/widgets/cardabsen.dart';
 import 'package:frontend/widgets/cardabsenlong.dart';
+import 'package:frontend/pages/permission_page.dart';
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -86,7 +88,9 @@ class _HomePageState extends State<HomePage> {
                                   width: 350.0,
                                   height: 40.0,
                                   child: ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Get.to(() => const PermissionPage());
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: secondaryColor,
                                       shape: RoundedRectangleBorder(
