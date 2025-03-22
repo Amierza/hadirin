@@ -6,8 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/widgets/navbar.dart';
 import 'package:frontend/widgets/cardabsen.dart';
 import 'package:frontend/widgets/cardabsenlong.dart';
-import 'package:frontend/pages/permission_page.dart';
-import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,14 +15,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int attendanceStreak = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: secondaryBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
+            Container(
+              width: double.infinity, // Make it span the full width
+              color: backgroundColor, // White background
               padding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
                 vertical: 10.0,
@@ -36,7 +38,7 @@ class _HomePageState extends State<HomePage> {
                     "Hari ini",
                     style: GoogleFonts.poppins(
                       fontSize: 30,
-                      fontWeight: extraBold,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   Text(
@@ -49,153 +51,148 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Expanded(
-              child: Container(
-                color: secondaryBackgroundColor,
-                child: ListView(
-                  children: [
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        cardabsen(
-                          image: 'assets/muka_presensi.png',
-                          date: '17:00',
-                          status: 'Masuk',
-                        ),
-                        cardabsen(
-                          image: 'assets/muka_presensi.png',
-                          date: '17:00',
-                          status: 'Pulang',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                    Container(
-                      padding: EdgeInsets.all(8.0),
-                      height: MediaQuery.of(context).size.height * 0.72,
-                      decoration: BoxDecoration(
-                        color: backgroundColor,
-                        borderRadius: BorderRadius.circular(40.0),
-                      ),
-                      child: Column(
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 20.0,
+              ),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: backgroundColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: Icon(Icons.search, color: primaryTextColor),
+                  hintText: 'Search',
+                  hintStyle: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: regular,
+                    color: primaryTextColor,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: secondaryColor,
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                SizedBox(
-                                  width: 350.0,
-                                  height: 40.0,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      Get.to(() => const PermissionPage());
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: secondaryColor,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          "Perizinan",
-                                          style: GoogleFonts.plusJakartaSans(
-                                            fontSize: 16,
-                                            fontWeight: regular,
-                                            color: backgroundColor,
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.privacy_tip_rounded,
-                                          size: 20,
-                                          color: backgroundColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 15),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      "Bulan ini",
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 30,
-                                        fontWeight: black,
-                                        color: primaryTextColor,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        Get.to(() => PresenceHistoryPage());
-                                      },
-                                      icon: Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 30,
-                                        color: primaryTextColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 15),
-                                Cardabsenlong(
-                                  day: '17',
-                                  date: 'Mon',
-                                  status1: 'Masuk',
-                                  status2: 'Pulang',
-                                  time1: '17:00',
-                                  time2: '17:00',
-                                ),
-                                const SizedBox(height: 15),
-                                Cardabsenlong(
-                                  day: '17',
-                                  date: 'Mon',
-                                  status1: 'Masuk',
-                                  status2: 'Pulang',
-                                  time1: '17:00',
-                                  time2: '17:00',
-                                ),
-                                const SizedBox(height: 15),
-                                Cardabsenlong(
-                                  day: '17',
-                                  date: 'Mon',
-                                  status1: 'Masuk',
-                                  status2: 'Pulang',
-                                  time1: '17:00',
-                                  time2: '17:00',
-                                ),
-                                const SizedBox(height: 15),
-                                Cardabsenlong(
-                                  day: '17',
-                                  date: 'Mon',
-                                  status1: 'Masuk',
-                                  status2: 'Pulang',
-                                  time1: '17:00',
-                                  time2: '17:00',
-                                ),
-                                const SizedBox(height: 15),
-                                Cardabsenlong(
-                                  day: '17',
-                                  date: 'Mon',
-                                  status1: 'Masuk',
-                                  status2: 'Pulang',
-                                  time1: '17:00',
-                                  time2: '17:00',
-                                ),
-                              ],
+                          Text(
+                            'Streak Absensi',
+                            style: TextStyle(
+                              fontSize: 17.0,
+                              fontWeight: regular,
+                              color: backgroundColor,
+                            ),
+                          ),
+                          Text(
+                            '$attendanceStreak Hari',
+                            style: TextStyle(
+                              fontSize: 30.0,
+                              fontWeight: extraBold,
+                              color: backgroundColor,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      Column(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 60.0,
+                            color: backgroundColor,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(40.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListView(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 15),
+                            cardabsen(
+                              image: 'assets/muka_presensi.png',
+                              date: 'April 17, 2023',
+                              status: 'Masuk',
+                              time: '18:35:40',
+                              desc: 'Tepat Waktu',
+                            ),
+                            const SizedBox(height: 15),
+                            cardabsen(
+                              image: 'assets/muka_presensi.png',
+                              date: 'April 17, 2023',
+                              status: 'Pulang',
+                              time: '18:35:40',
+                              desc: 'Tepat Waktu',
+                            ),
+                            const SizedBox(height: 30),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const SizedBox(width: 10),
+                                Text(
+                                  "Bulan ini",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 30,
+                                    fontWeight: black,
+                                    color: primaryTextColor,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    Get.to(() => const PresenceHistoryPage());
+                                  },
+                                  icon: Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 30,
+                                    color: primaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Cardabsenlong(
+                              day: '17',
+                              date: 'Mon',
+                              status1: 'Masuk',
+                              status2: 'Pulang',
+                              time1: '17:00',
+                              time2: '17:00',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
