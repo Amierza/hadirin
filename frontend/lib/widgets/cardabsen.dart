@@ -5,12 +5,16 @@ class cardabsen extends StatelessWidget {
   final String image;
   final String date;
   final String status;
+  final String time;
+  final String desc;
 
   const cardabsen({
     Key? key,
     required this.image,
     required this.date,
     required this.status,
+    required this.time,
+    required this.desc,
   }) : super(key: key);
 
   @override
@@ -19,8 +23,8 @@ class cardabsen extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.all(8.0),
-      width: 150.0,
-      height: 80.0,
+      width: double.infinity,
+      height: 100.0,
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(20.0),
@@ -28,6 +32,7 @@ class cardabsen extends StatelessWidget {
       ),
       child: Row(
         children: [
+          SizedBox(width: 10.0),
           ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: Image.asset(image, width: 50, height: 30, fit: BoxFit.cover),
@@ -35,6 +40,7 @@ class cardabsen extends StatelessWidget {
           SizedBox(width: 10.0),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 status,
@@ -50,6 +56,26 @@ class cardabsen extends StatelessWidget {
               ),
             ],
           ),
+          Spacer(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                time,
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
+              ),
+              Text(
+                desc, // Provided date or timestamp
+                style: TextStyle(fontSize: 16.0),
+              ),
+            ],
+          ),
+          SizedBox(width: 10.0),
         ],
       ),
     );
