@@ -48,7 +48,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           ),
           IconButton(
             onPressed: () {
-              onItemTapped(2);
+              onItemTapped(1);
               Get.to(() => PermissionPage());
             },
             icon: Icon(
@@ -58,9 +58,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {
-              onItemTapped(3);
-              Get.to(() => ProfilePage());
+            onPressed: () => {
+              onItemTapped(3),
+              Get.to(() => ProfilePage()),
             },
             icon: Icon(
               Icons.person,

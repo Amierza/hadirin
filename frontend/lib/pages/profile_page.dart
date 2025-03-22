@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:frontend/pages/edit_profile_page.dart';
 import 'package:frontend/shared/theme.dart';
-import 'package:frontend/widgets/dialog_signout.dart';
 import 'package:frontend/widgets/navbar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -55,12 +53,7 @@ class ProfilePage extends StatelessWidget {
                         foregroundColor: Colors.white,
                         iconColor: Colors.white,
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => EditProfilePage()),
-                        );
-                      },
+                      onPressed: () {},
                       child: Row(
                         children: [
                           Icon(Icons.repeat, size: 18),
@@ -107,21 +100,14 @@ class ProfilePage extends StatelessWidget {
                 foregroundColor: Colors.white,
                 iconColor: Colors.white,
               ),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return SignoutDialog();
-                  },
-                );
-              },
+              onPressed: () {},
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Log out',
+                      'Log Out',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: regular,
