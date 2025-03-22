@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/edit_profile_page.dart';
 import 'package:frontend/pages/presence_page.dart';
 import 'package:frontend/pages/profile_page.dart';
 import 'package:get/get.dart';
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/home', page: () => HomePage()),
         GetPage(name: '/perizinan', page: () => HomePage()),
         GetPage(name: '/profile', page: () => ProfilePage()),
+        GetPage(name: '/edit-profile', page: () => EditProfilePage()), 
       ],
     );
   }
