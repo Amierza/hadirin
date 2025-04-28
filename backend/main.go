@@ -7,6 +7,7 @@ import (
 	"github.com/Amierza/hadirin/backend/cmd"
 	"github.com/Amierza/hadirin/backend/config/database"
 	"github.com/Amierza/hadirin/backend/handler"
+	"github.com/Amierza/hadirin/backend/middleware"
 	"github.com/Amierza/hadirin/backend/repository"
 	"github.com/Amierza/hadirin/backend/routes"
 	"github.com/Amierza/hadirin/backend/service"
@@ -30,6 +31,7 @@ func main() {
 	)
 
 	server := gin.Default()
+	server.Use(middleware.CORSMiddleware())
 
 	routes.Employee(server, employeeHandler, jwtService)
 
