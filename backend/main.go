@@ -24,16 +24,16 @@ func main() {
 	}
 
 	var (
-		jwtService      = service.NewJWTService()
-		employeeRepo    = repository.NewEmployeeRepository(db)
-		employeeService = service.NewEmployeeService(employeeRepo, jwtService)
-		employeeHandler = handler.NewEmployeeHandler(employeeService)
+		jwtService  = service.NewJWTService()
+		userRepo    = repository.NewUserRepository(db)
+		userService = service.NewUserService(userRepo, jwtService)
+		userHandler = handler.NewUserHandler(userService)
 	)
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
 
-	routes.Employee(server, employeeHandler, jwtService)
+	routes.User(server, userHandler, jwtService)
 
 	server.Static("/assets", "./assets")
 

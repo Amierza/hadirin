@@ -1,30 +1,13 @@
 package entity
 
-import (
-	"time"
-
-	"github.com/google/uuid"
-	"gorm.io/gorm"
-)
+import "github.com/google/uuid"
 
 type Permission struct {
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey" json:"permission_id"`
-	Date   time.Time `json:"permission_date"`
-	Status int       `json:"permission_status"`
-	Title  string    `json:"permission_title"`
-	Desc   string    `json:"permission_desc"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey" json:"permission_id"`
+	Endpoint string    `json:"permission_endpoint"`
+
+	RoleID *uuid.UUID `gorm:"type:uuid" json:"role_id"`
+	Role   Role       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 
 	TimeStamp
-}
-
-func (p *Permission) BeforeCreate(tx *gorm.DB) error {
-	defer func() {
-		if err := recover(); err != nil {
-			tx.Rollback()
-		}
-	}()
-
-	p.ID = uuid.New()
-
-	return nil
 }
