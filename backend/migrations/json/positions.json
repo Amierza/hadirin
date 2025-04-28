@@ -1,0 +1,62 @@
+[
+  {
+    "position_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85",
+    "position_name": "Backend Engineer"
+  },
+  {
+    "position_id": "d96b99e9-1346-49e5-920b-8eab44e2c6f4",
+    "position_name": "Frontend Engineer"
+  },
+  {
+    "position_id": "b5f8a1b2-7183-40be-bf35-97b5e497fc21",
+    "position_name": "Mobile Developer"
+  },
+  {
+    "position_id": "ad9d219f-b8ef-4f28-9eaf-3c97eb7a7e3d",
+    "position_name": "DevOps Engineer"
+  },
+  {
+    "position_id": "e7d18443-5585-4d2d-a8e0-445b492cf3f0",
+    "position_name": "Product Manager"
+  },
+  {
+    "position_id": "92a8631a-b10b-4b24-b2ba-c3b2acb2b7ef",
+    "position_name": "UI/UX Designer"
+  },
+  {
+    "position_id": "6b2f9091-2740-42d8-8f1c-9cc930a8d72c",
+    "position_name": "Data Analyst"
+  },
+  {
+    "position_id": "f28b0cd2-5801-4d04-a8b6-fdf99f5c6b12",
+    "position_name": "Data Scientist"
+  },
+  {
+    "position_id": "c12d7805-92ce-4d4c-93d8-9b3a0d9e4b72",
+    "position_name": "QA Engineer"
+  },
+  {
+    "position_id": "8a214d70-2188-4d2b-91eb-4fefc6588e5f",
+    "position_name": "HR Specialist"
+  },
+  {
+    "position_id": "0b2a6d18-d206-4dbe-b84a-57462ff22db8",
+    "position_name": "Finance Officer"
+  },
+  {
+    "position_id": "fa862e11-1a11-41cc-80bc-c7c2a02a7e4d",
+    "position_name": "Marketing Executive"
+  },
+  {
+    "position_id": "6f879eb9-4e4a-4cf8-8591-02c9e0d0891f",
+    "position_name": "Sales Representative"
+  },
+  {
+    "position_id": "b8dcb40e-0d0b-4e5d-a55d-f9c5f3f38d0f",
+    "position_name": "Customer Support"
+  },
+  {
+    "position_id": "58b1c52e-7d56-4e5e-8698-52cb6e43e16d",
+    "position_name": "IT Support Specialist"
+  }
+]
