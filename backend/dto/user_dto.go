@@ -3,6 +3,7 @@ package dto
 import (
 	"errors"
 
+	"github.com/Amierza/hadirin/backend/entity"
 	"github.com/google/uuid"
 )
 
@@ -15,10 +16,12 @@ const (
 	MESSAGE_FAILED_TOKEN_DENIED_ACCESS = "gagal, akses token ditolak"
 	MESSAGE_FAILED_REGISTER_USER       = "gagal mendaftarkan user"
 	MESSAGE_FAILED_LOGIN_USER          = "gagal login user"
+	MESSAGE_FAILED_GET_LIST_POSITION   = "gagal mendapatkan list posisi"
 
 	// success
-	MESSAGE_SUCCESS_REGISTER_USER = "berhasil mendaftarkan user"
-	MESSAGE_SUCCESS_LOGIN_USER    = "berhasil login user"
+	MESSAGE_SUCCESS_REGISTER_USER     = "berhasil mendaftarkan user"
+	MESSAGE_SUCCESS_LOGIN_USER        = "berhasil login user"
+	MESSAGE_SUCCESS_GET_LIST_POSITION = "berhasil mendapatkan list posisi"
 )
 
 var (
@@ -83,5 +86,15 @@ type (
 	UserLoginResponse struct {
 		AccessToken  string `json:"access_token"`
 		RefreshToken string `json:"refresh_token"`
+	}
+
+	PositionPaginationResponse struct {
+		PaginationResponse
+		Data []PositionResponse `json:"data"`
+	}
+
+	AllPositionRepositoryResponse struct {
+		PaginationResponse
+		Positions []entity.Position
 	}
 )

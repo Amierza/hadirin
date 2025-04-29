@@ -14,6 +14,7 @@ type (
 	IUserService interface {
 		Register(ctx context.Context, req dto.UserRegisterRequest) (dto.AllUserResponse, error)
 		Login(ctx context.Context, req dto.UserLoginRequest) (dto.UserLoginResponse, error)
+		GetAllPositionWithPagination(ctx context.Context, req dto.PaginationRequest) (dto.PositionPaginationResponse, error)
 	}
 
 	UserService struct {
@@ -143,5 +144,32 @@ func (us *UserService) Login(ctx context.Context, req dto.UserLoginRequest) (dto
 	return dto.UserLoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (as *UserService) GetAllPositionWithPagination(ctx context.Context, req dto.PaginationRequest) (dto.PositionPaginationResponse, error) {
+	dataWithPaginate, err := as.userRepo.GetAllPositionWithPagination(ctx, nil, req)
+	if err != nil {
+		return dto.PositionPaginationResponse{}, err
+	}
+
+	var datas []dto.PositionResponse
+	for _, position := range dataWithPaginate.Positions {
+		data := dto.PositionResponse{
+			ID:   &position.ID,
+			Name: position.Name,
+		}
+
+		datas = append(datas, data)
+	}
+
+	return dto.PositionPaginationResponse{
+		Data: datas,
+		PaginationResponse: dto.PaginationResponse{
+			Page:    dataWithPaginate.Page,
+			PerPage: dataWithPaginate.PerPage,
+			MaxPage: dataWithPaginate.MaxPage,
+			Count:   dataWithPaginate.Count,
+		},
 	}, nil
 }

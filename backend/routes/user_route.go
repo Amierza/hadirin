@@ -11,5 +11,6 @@ func User(route *gin.Engine, userHandler handler.IUserHandler, jwtService servic
 	{
 		routes.POST("/register", userHandler.Register)
 		routes.POST("/login", userHandler.Login)
+		routes.GET("/get-all-position", userHandler.GetAllPosition)
 	}
 }

@@ -12,8 +12,8 @@ type User struct {
 	Email       string    `gorm:"unique; not null" json:"user_email"`
 	Password    string    `gorm:"not null" json:"user_password"`
 	PhoneNumber string    `json:"user_phone_number"`
-	Photo       string    `json:"user_photo,omitempty"`
-	IsVerified  bool      `json:"is_verified"`
+	Photo       string    `json:"user_photo"`
+	IsVerified  bool      `json:"user_is_verified"`
 
 	RoleID     *uuid.UUID `gorm:"type:uuid" json:"role_id"`
 	Role       Role       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
