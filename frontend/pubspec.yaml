@@ -43,6 +43,7 @@ dependencies:
   flutter_map: ^8.1.0
   google_maps_flutter: ^2.10.1
   latlong2: ^0.9.1
+  http: ^1.3.0
 
 dev_dependencies:
   
