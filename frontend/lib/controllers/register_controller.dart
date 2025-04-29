@@ -74,7 +74,7 @@ class RegisterController extends GetxController {
         Get.defaultDialog(
           title: 'Registrasi Berhasil',
           titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          middleText: "Semoga lanjutkan ke halaman login",
+          middleText: "lanjutkan ke halaman login",
           middleTextStyle: TextStyle(color: Colors.white),
           textConfirm: "OK",
           confirmTextColor: Colors.black, // Warna teks tombol
