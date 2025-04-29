@@ -14,27 +14,28 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final RegisterController controller = Get.put(RegisterController());
-
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  String? selectedRole;
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  String? selectedRole;
+
   final List<String> roles = [
-    'Manager',
-    'Developer',
-    'Designer',
-    'Admin',
-    'Marketing',
+    'Backend Engineer',
+    'Frontend Engineer',
+    'Mobile Developer',
+    'DevOps Engineer',
+    'Product Manager',
+    'UI/UX Designer',
+    'Data Analyst',
+    'QA Engineer',
+    'HR Specialist',
   ];
 
   @override
   void dispose() {
-    nameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
+    controller.nameController.dispose();
+    controller.emailController.dispose();
+    controller.passwordController.dispose();
+    controller.phoneController.dispose();
     super.dispose();
   }
 
@@ -64,7 +65,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _register() {
     if (_formKey.currentState!.validate() && selectedRole != null) {
-      // controller.register(nameController.text, emailController.text, passwordController.text, selectedRole!);
+      controller.register(context, selectedRole!);
     } else {
       Get.snackbar(
         'Error',
@@ -79,228 +80,250 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 35.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Image.asset('assets/logo_green.png', width: 150, height: 150),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Selamat datang di Hadirin',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 20,
-                      fontWeight: extraBold,
-                      color: primaryTextColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Absen dengan deteksi wajah bersama Hadirin',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: bold,
-                      color: tertiaryTextColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildNameField(),
-                  const SizedBox(height: 20),
-                  _buildRoleDropdown(),
-                  const SizedBox(height: 20),
-                  _buildEmailField(),
-                  const SizedBox(height: 20),
-                  _buildPasswordField(),
-                  const SizedBox(height: 20),
-                  _buildCreateAccountButton(),
-                  const SizedBox(height: 10),
-                  _buildAlreadyHaveAccountText(),
-                ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 30.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 90),
+              Image.asset('assets/logo_green.png', height: 120),
+              const SizedBox(height: 20),
+              Text(
+                'Selamat datang di Hadirin',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 20,
+                  fontWeight: extraBold,
+                  color: primaryTextColor,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNameField() {
-    return _buildInputField(
-      label: 'Nama',
-      controller: nameController,
-      hintText: 'Masukkan nama anda',
-      hintStyle: TextStyle(color: tertiaryTextColor),
-    );
-  }
-
-  Widget _buildEmailField() {
-    return _buildInputField(
-      label: 'E-mail',
-      controller: emailController,
-      hintText: 'Masukkan email anda',
-      hintStyle: TextStyle(color: tertiaryTextColor),
-      keyboardType: TextInputType.emailAddress,
-      validator: _validateEmail,
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Password',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              fontWeight: extraBold,
-              color: primaryTextColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Obx(
-            () => TextFormField(
-              controller: passwordController,
-              obscureText: controller.obscureText.value,
-              validator: _validatePassword,
-              decoration: InputDecoration(
-                hintText: "Masukkan password",
-                hintStyle: TextStyle(color: tertiaryTextColor),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    controller.obscureText.value
-                        ? Icons.visibility_off
-                        : Icons.visibility,
+              const SizedBox(height: 10),
+              Text(
+                'Absen dengan deteksi wajah bersama Hadirin',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: bold,
+                  color: tertiaryTextColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 37),
+              
+              // Name Field
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Nama',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: extraBold,
                     color: primaryTextColor,
                   ),
-                  onPressed: controller.togglePasswordVisibility,
                 ),
-                border: const UnderlineInputBorder(),
               ),
-            ),
+              TextFormField(
+                controller: controller.nameController,
+                decoration: InputDecoration(
+                  hintText: 'Masukkan nama anda',
+                  hintStyle: TextStyle(color: tertiaryTextColor),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: secondaryBackgroundColor),
+                  ),
+                ),
+                validator: (value) => value == null || value.isEmpty 
+                    ? 'Masukkan nama anda' 
+                    : null,
+              ),
+              const SizedBox(height: 40),
+              
+              // Phone Field
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Nomor HP',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: extraBold,
+                    color: primaryTextColor,
+                  ),
+                ),
+              ),
+              TextFormField(
+                controller: controller.phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  hintText: 'Masukkan nomor HP anda',
+                  hintStyle: TextStyle(color: tertiaryTextColor),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: secondaryBackgroundColor),
+                  ),
+                ),
+                validator: (value) => value == null || value.isEmpty 
+                    ? 'Masukkan nomor HP anda' 
+                    : null,
+              ),
+              const SizedBox(height: 40),
+              
+              // Role Dropdown
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Pilih Posisi',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: extraBold,
+                    color: primaryTextColor,
+                  ),
+                ),
+              ),
+              DropdownButtonFormField<String>(
+                value: selectedRole,
+                decoration: InputDecoration(
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: secondaryBackgroundColor),
+                  ),
+                ),
+                hint: Text(
+                  'Pilih Posisi Pekerjaan',
+                  style: TextStyle(color: tertiaryTextColor),
+                ),
+                items: roles.map((String role) {
+                  return DropdownMenuItem<String>(
+                    value: role,
+                    child: Text(role),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedRole = newValue;
+                  });
+                },
+                validator: (value) => value == null ? 'Pilih posisi pekerjaan' : null,
+              ),
+              const SizedBox(height: 40),
+              
+              // Email Field
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'E-mail',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: extraBold,
+                    color: primaryTextColor,
+                  ),
+                ),
+              ),
+              TextFormField(
+                controller: controller.emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  hintText: 'Masukkan email anda',
+                  hintStyle: TextStyle(color: tertiaryTextColor),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: secondaryBackgroundColor),
+                  ),
+                ),
+                validator: _validateEmail,
+              ),
+              const SizedBox(height: 40),
+              
+              // Password Field
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Password',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: extraBold,
+                    color: primaryTextColor,
+                  ),
+                ),
+              ),
+              Obx(
+                () => TextFormField(
+                  controller: controller.passwordController,
+                  obscureText: controller.obscureText.value,
+                  decoration: InputDecoration(
+                    hintText: 'Masukkan password',
+                    hintStyle: TextStyle(color: tertiaryTextColor),
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(color: secondaryBackgroundColor),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.obscureText.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: controller.obscureText.value
+                            ? tertiaryTextColor
+                            : primaryTextColor,
+                      ),
+                      onPressed: controller.togglePasswordVisibility,
+                    ),
+                  ),
+                  validator: _validatePassword,
+                ),
+              ),
+              const SizedBox(height: 40),
+              
+              // Register Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Text(
+                    'Create Account',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 20,
+                      fontWeight: bold,
+                      color: backgroundColor,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Already have account text
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Already have an Account? ",
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: tertiaryTextColor,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.to(() => const SignInPage());
+                    },
+                    child: Text(
+                      "Login",
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildRoleDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Pilih Posisi',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
-            fontWeight: extraBold,
-            color: primaryTextColor,
-          ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: selectedRole,
-          decoration: const InputDecoration(border: UnderlineInputBorder()),
-          hint: Text(
-            'Pilih Posisi Pekerjaan',
-            style: TextStyle(color: tertiaryTextColor),
-          ),
-          items:
-              roles.map((String role) {
-                return DropdownMenuItem<String>(value: role, child: Text(role));
-              }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              selectedRole = newValue;
-            });
-          },
-          validator: (value) => value == null ? 'Pilih posisi pekerjaan' : null,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCreateAccountButton() {
-    return GestureDetector(
-      onTap: _register,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 13),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: primaryColor,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Center(
-          child: Text(
-            "Create Account",
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              fontWeight: extraBold,
-              color: backgroundColor,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAlreadyHaveAccountText() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          "Already have an account? ",
-          style: TextStyle(fontFamily: 'PlusJakartaSans'),
-        ),
-        GestureDetector(
-          onTap: () => Get.to(() => const SignInPage()),
-          child: Text(
-            "Login",
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              fontWeight: extraBold,
-              color: primaryColor,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInputField({
-    required String label,
-    required TextEditingController controller,
-    String? hintText,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator, required TextStyle hintStyle,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
-            fontWeight: extraBold,
-            color: primaryTextColor,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          validator: validator,
-          decoration: InputDecoration(
-            hintText: hintText,
-            border: const UnderlineInputBorder(),
-          ),
-        ),
-      ],
     );
   }
 }
