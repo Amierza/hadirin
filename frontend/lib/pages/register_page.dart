@@ -16,29 +16,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final RegisterController controller = Get.put(RegisterController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  String? selectedRole;
-
-  final List<String> roles = [
-    'Backend Engineer',
-    'Frontend Engineer',
-    'Mobile Developer',
-    'DevOps Engineer',
-    'Product Manager',
-    'UI/UX Designer',
-    'Data Analyst',
-    'QA Engineer',
-    'HR Specialist',
-  ];
-
-  @override
-  void dispose() {
-    controller.nameController.dispose();
-    controller.emailController.dispose();
-    controller.passwordController.dispose();
-    controller.phoneController.dispose();
-    super.dispose();
-  }
-
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Masukkan email anda';
@@ -64,12 +41,12 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _register() {
-    if (_formKey.currentState!.validate() && selectedRole != null) {
-      controller.register(context, selectedRole!);
+    if (_formKey.currentState!.validate()) {
+      controller.register(context);
     } else {
       Get.snackbar(
         'Error',
-        'Semua field harus diisi dengan benar',
+        'Pastikan semua field diisi dengan benar',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -85,7 +62,6 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Form(
           key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 90),
               Image.asset('assets/logo_green.png', height: 120),
@@ -110,190 +86,112 @@ class _RegisterPageState extends State<RegisterPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 37),
-              
-              // Name Field
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Nama',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: extraBold,
-                    color: primaryTextColor,
-                  ),
-                ),
-              ),
+
+              _buildInputLabel('Nama'),
               TextFormField(
                 controller: controller.nameController,
-                decoration: InputDecoration(
-                  hintText: 'Masukkan nama anda',
-                  hintStyle: TextStyle(color: tertiaryTextColor),
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: secondaryBackgroundColor),
-                  ),
-                ),
-                validator: (value) => value == null || value.isEmpty 
-                    ? 'Masukkan nama anda' 
-                    : null,
+                decoration: _buildInputDecoration('Masukkan nama anda'),
+                validator: (value) => value == null || value.isEmpty ? 'Masukkan nama anda' : null,
               ),
               const SizedBox(height: 40),
-              
-              // Phone Field
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Nomor HP',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: extraBold,
-                    color: primaryTextColor,
-                  ),
-                ),
-              ),
+
+              _buildInputLabel('Nomor HP'),
               TextFormField(
                 controller: controller.phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  hintText: 'Masukkan nomor HP anda',
-                  hintStyle: TextStyle(color: tertiaryTextColor),
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: secondaryBackgroundColor),
-                  ),
-                ),
-                validator: (value) => value == null || value.isEmpty 
-                    ? 'Masukkan nomor HP anda' 
-                    : null,
+                decoration: _buildInputDecoration('Masukkan nomor HP anda'),
+                validator: (value) => value == null || value.isEmpty ? 'Masukkan nomor HP anda' : null,
               ),
               const SizedBox(height: 40),
-              
-              // Role Dropdown
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Pilih Posisi',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: extraBold,
-                    color: primaryTextColor,
-                  ),
-                ),
-              ),
-              DropdownButtonFormField<String>(
-                value: selectedRole,
-                decoration: InputDecoration(
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: secondaryBackgroundColor),
-                  ),
-                ),
-                hint: Text(
-                  'Pilih Posisi Pekerjaan',
-                  style: TextStyle(color: tertiaryTextColor),
-                ),
-                items: roles.map((String role) {
-                  return DropdownMenuItem<String>(
-                    value: role,
-                    child: Text(role),
+
+              _buildInputLabel('Pilih Posisi'),
+              Obx(() {
+                if (controller.isLoadingPositions.value) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12.0),
+                    child: Center(child: CircularProgressIndicator()),
                   );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedRole = newValue;
-                  });
-                },
-                validator: (value) => value == null ? 'Pilih posisi pekerjaan' : null,
-              ),
-              const SizedBox(height: 40),
-              
-              // Email Field
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'E-mail',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: extraBold,
-                    color: primaryTextColor,
+                }
+
+                return DropdownButtonFormField(
+                  value: controller.selectedPosition.value,
+                  hint: Text('Pilih Posisi Pekerjaan', style: TextStyle(color: tertiaryTextColor)),
+                  decoration: const InputDecoration(
+                    border: UnderlineInputBorder(),
                   ),
-                ),
-              ),
+                  items: controller.positions.map((position) {
+                    return DropdownMenuItem(
+                      value: position,
+                      child: Text(position.name),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    controller.setSelectedPosition(newValue!);
+                  },
+                  validator: (value) => value == null ? 'Pilih posisi pekerjaan' : null,
+                );
+              }),
+              const SizedBox(height: 40),
+
+              _buildInputLabel('E-mail'),
               TextFormField(
                 controller: controller.emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  hintText: 'Masukkan email anda',
-                  hintStyle: TextStyle(color: tertiaryTextColor),
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: secondaryBackgroundColor),
-                  ),
-                ),
+                decoration: _buildInputDecoration('Masukkan email anda'),
                 validator: _validateEmail,
               ),
               const SizedBox(height: 40),
-              
-              // Password Field
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Password',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: extraBold,
-                    color: primaryTextColor,
-                  ),
-                ),
-              ),
-              Obx(
-                () => TextFormField(
-                  controller: controller.passwordController,
-                  obscureText: controller.obscureText.value,
-                  decoration: InputDecoration(
-                    hintText: 'Masukkan password',
-                    hintStyle: TextStyle(color: tertiaryTextColor),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: secondaryBackgroundColor),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.obscureText.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: controller.obscureText.value
-                            ? tertiaryTextColor
-                            : primaryTextColor,
+
+              _buildInputLabel('Password'),
+              Obx(() => TextFormField(
+                    controller: controller.passwordController,
+                    obscureText: controller.obscureText.value,
+                    decoration: _buildInputDecoration('Masukkan password').copyWith(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          controller.obscureText.value ? Icons.visibility_off : Icons.visibility,
+                          color: controller.obscureText.value ? tertiaryTextColor : primaryTextColor,
+                        ),
+                        onPressed: controller.togglePasswordVisibility,
                       ),
-                      onPressed: controller.togglePasswordVisibility,
                     ),
-                  ),
-                  validator: _validatePassword,
-                ),
-              ),
+                    validator: _validatePassword,
+                  )),
               const SizedBox(height: 40),
-              
-              // Register Button
+
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: ElevatedButton(
-                  onPressed: _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: Text(
-                    'Create Account',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 20,
-                      fontWeight: bold,
-                      color: backgroundColor,
-                    ),
-                  ),
-                ),
+                child: Obx(() => ElevatedButton(
+                      onPressed: controller.isLoading.value ? null : _register,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        disabledBackgroundColor: primaryColor.withOpacity(0.5),
+                      ),
+                      child: controller.isLoading.value
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'Create Account',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 20,
+                                fontWeight: bold,
+                                color: backgroundColor,
+                              ),
+                            ),
+                    )),
               ),
               const SizedBox(height: 20),
-              
-              // Already have account text
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -301,14 +199,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     "Already have an Account? ",
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
-                      fontWeight: FontWeight.w400,
                       color: tertiaryTextColor,
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      Get.to(() => const SignInPage());
-                    },
+                    onPressed: () => Get.to(() => const SignInPage()),
                     child: Text(
                       "Login",
                       style: GoogleFonts.plusJakartaSans(
@@ -320,10 +215,33 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ],
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInputLabel(String label) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 14,
+          fontWeight: extraBold,
+          color: primaryTextColor,
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: tertiaryTextColor),
+      border: const UnderlineInputBorder(),
     );
   }
 }
