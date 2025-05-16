@@ -2,11 +2,10 @@ package repository
 
 import (
 	"context"
-	"math"
-	"strings"
 
 	"github.com/Amierza/hadirin/backend/dto"
 	"github.com/Amierza/hadirin/backend/entity"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -17,8 +16,9 @@ type (
 		GetPositionByID(ctx context.Context, tx *gorm.DB, positionID string) (entity.Position, error)
 		GetRoleByName(ctx context.Context, tx *gorm.DB, roleName string) (entity.Role, error)
 		GetPermissionsByRoleID(ctx context.Context, tx *gorm.DB, roleID string) ([]string, error)
-		GetAllPositionWithPagination(ctx context.Context, tx *gorm.DB, req dto.PaginationRequest) (dto.AllPositionRepositoryResponse, error)
+		GetAllPosition(ctx context.Context, tx *gorm.DB) (dto.AllPositionRepositoryResponse, error)
 		GetRoleByID(ctx context.Context, tx *gorm.DB, roleID string) (entity.Role, error)
+		GetUserByID(ctx context.Context, tx *gorm.DB, userID string) (entity.User, error)
 
 		// POST / Create
 		RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
@@ -84,48 +84,20 @@ func (ur *UserRepository) GetPermissionsByRoleID(ctx context.Context, tx *gorm.D
 
 	return endpoints, nil
 }
-func (ar *UserRepository) GetAllPositionWithPagination(ctx context.Context, tx *gorm.DB, req dto.PaginationRequest) (dto.AllPositionRepositoryResponse, error) {
+func (ar *UserRepository) GetAllPosition(ctx context.Context, tx *gorm.DB) (dto.AllPositionRepositoryResponse, error) {
 	if tx == nil {
 		tx = ar.db
 	}
 
 	var positions []entity.Position
 	var err error
-	var count int64
 
-	if req.PerPage == 0 {
-		req.PerPage = 10
-	}
-
-	if req.Page == 0 {
-		req.Page = 1
-	}
-
-	query := tx.WithContext(ctx).Model(&entity.Position{})
-
-	if req.Search != "" {
-		searchValue := "%" + strings.ToLower(req.Search) + "%"
-		query = query.Where("LOWER(name) LIKE ?", searchValue)
-	}
-
-	if err := query.Count(&count).Error; err != nil {
+	if err := tx.WithContext(ctx).Model(&entity.Position{}).Order("created_at DESC").Find(&positions).Error; err != nil {
 		return dto.AllPositionRepositoryResponse{}, err
 	}
-
-	if err := query.Order("created_at DESC").Scopes(Paginate(req.Page, req.PerPage)).Find(&positions).Error; err != nil {
-		return dto.AllPositionRepositoryResponse{}, err
-	}
-
-	totalPage := int64(math.Ceil(float64(count) / float64(req.PerPage)))
 
 	return dto.AllPositionRepositoryResponse{
 		Positions: positions,
-		PaginationResponse: dto.PaginationResponse{
-			Page:    req.Page,
-			PerPage: req.PerPage,
-			MaxPage: totalPage,
-			Count:   count,
-		},
 	}, err
 }
 func (ur *UserRepository) GetRoleByID(ctx context.Context, tx *gorm.DB, roleID string) (entity.Role, error) {
@@ -140,6 +112,18 @@ func (ur *UserRepository) GetRoleByID(ctx context.Context, tx *gorm.DB, roleID s
 
 	return role, nil
 }
+func (ur *UserRepository) GetUserByID(ctx context.Context, tx *gorm.DB, userID string) (entity.User, error) {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	var user entity.User
+	if err := tx.WithContext(ctx).Preload("Position").Preload("Role").Where("id = ?", userID).Take(&user).Error; err != nil {
+		return entity.User{}, err
+	}
+
+	return user, nil
+}
 
 // POST / Create
 func (ur *UserRepository) RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error) {
@@ -148,6 +132,7 @@ func (ur *UserRepository) RegisterUser(ctx context.Context, tx *gorm.DB, user en
 	}
 
 	var newUser entity.User
+	user.ID = uuid.New()
 	if err := tx.WithContext(ctx).Create(&user).Take(&newUser).Error; err != nil {
 		return entity.User{}, err
 	}

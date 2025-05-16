@@ -18,7 +18,10 @@ type (
 		RefreshToken(ctx context.Context, req dto.RefreshTokenRequest) (dto.RefreshTokenResponse, error)
 
 		// Position
-		GetAllPositionWithPagination(ctx context.Context, req dto.PaginationRequest) (dto.PositionPaginationResponse, error)
+		GetAllPosition(ctx context.Context) (dto.PositionsResponse, error)
+
+		// User
+		GetDetailUser(ctx context.Context) (dto.AllUserResponse, error)
 	}
 
 	UserService struct {
@@ -67,13 +70,12 @@ func (us *UserService) Register(ctx context.Context, req dto.UserRegisterRequest
 		return dto.AllUserResponse{}, dto.ErrPositionNotFound
 	}
 
-	role, err := us.userRepo.GetRoleByName(ctx, nil, "employee")
+	role, err := us.userRepo.GetRoleByName(ctx, nil, "user")
 	if err != nil {
 		return dto.AllUserResponse{}, dto.ErrGetRoleFromName
 	}
 
 	user := entity.User{
-		ID:          uuid.New(),
 		Name:        req.Name,
 		Email:       req.Email,
 		Password:    req.Password,
@@ -126,12 +128,12 @@ func (us *UserService) Login(ctx context.Context, req dto.UserLoginRequest) (dto
 		return dto.UserLoginResponse{}, dto.ErrPasswordNotMatch
 	}
 
-	role, err := us.userRepo.GetRoleByName(ctx, nil, "employee")
+	role, err := us.userRepo.GetRoleByName(ctx, nil, "user")
 	if err != nil {
 		return dto.UserLoginResponse{}, dto.ErrGetRoleFromName
 	}
 
-	if role.Name != "employee" {
+	if role.Name != "user" {
 		return dto.UserLoginResponse{}, dto.ErrDeniedAccess
 	}
 
@@ -190,10 +192,10 @@ func (us *UserService) RefreshToken(ctx context.Context, req dto.RefreshTokenReq
 }
 
 // Position
-func (as *UserService) GetAllPositionWithPagination(ctx context.Context, req dto.PaginationRequest) (dto.PositionPaginationResponse, error) {
-	dataWithPaginate, err := as.userRepo.GetAllPositionWithPagination(ctx, nil, req)
+func (as *UserService) GetAllPosition(ctx context.Context) (dto.PositionsResponse, error) {
+	dataWithPaginate, err := as.userRepo.GetAllPosition(ctx, nil)
 	if err != nil {
-		return dto.PositionPaginationResponse{}, err
+		return dto.PositionsResponse{}, err
 	}
 
 	var datas []dto.PositionResponse
@@ -206,13 +208,39 @@ func (as *UserService) GetAllPositionWithPagination(ctx context.Context, req dto
 		datas = append(datas, data)
 	}
 
-	return dto.PositionPaginationResponse{
+	return dto.PositionsResponse{
 		Data: datas,
-		PaginationResponse: dto.PaginationResponse{
-			Page:    dataWithPaginate.Page,
-			PerPage: dataWithPaginate.PerPage,
-			MaxPage: dataWithPaginate.MaxPage,
-			Count:   dataWithPaginate.Count,
+	}, nil
+}
+
+// User
+func (us *UserService) GetDetailUser(ctx context.Context) (dto.AllUserResponse, error) {
+	token := ctx.Value("Authorization").(string)
+
+	userId, err := us.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		return dto.AllUserResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	user, err := us.userRepo.GetUserByID(ctx, nil, userId)
+	if err != nil {
+		return dto.AllUserResponse{}, dto.ErrUserNotFound
+	}
+
+	return dto.AllUserResponse{
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		Password:    user.Password,
+		PhoneNumber: user.PhoneNumber,
+		IsVerified:  user.IsVerified,
+		Position: dto.PositionResponse{
+			ID:   user.PositionID,
+			Name: user.Position.Name,
+		},
+		Role: dto.RoleResponse{
+			ID:   user.RoleID,
+			Name: user.Role.Name,
 		},
 	}, nil
 }

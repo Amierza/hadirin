@@ -1,17 +1,7 @@
 [
   {
     "permission_id": "0a42cdea-bbb8-40d5-a39e-8c9d01fc2021",
-    "permission_endpoint": "/api/v1/user/register",
+    "permission_endpoint": "/api/v1/user/get-detail-user",
     "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
-  },
-  {
-    "permission_id": "32a9713c-3e60-46ec-bc96-5edb38c2b3e4",
-    "permission_endpoint": "/api/v1/user/login",
-    "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
-  },
-  {
-    "permission_id": "aa4f1680-2e51-44d2-89d3-5d527e83a710",
-    "permission_endpoint": "/api/v1/admin/login",
-    "role_id": "d96b99e9-1346-49e5-920b-8eab44e2c6f4"
   }
 ]

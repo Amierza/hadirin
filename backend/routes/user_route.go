@@ -20,7 +20,8 @@ func User(route *gin.Engine, userHandler handler.IUserHandler, jwtService servic
 
 		routes.Use(middleware.Authentication(jwtService), middleware.RouteAccessControl(jwtService))
 		{
-
+			// User
+			routes.GET("/get-detail-user", userHandler.GetDetailUser)
 		}
 	}
 }

@@ -18,6 +18,9 @@ type (
 
 		// Position
 		GetAllPosition(ctx *gin.Context)
+
+		// User
+		GetDetailUser(ctx *gin.Context)
 	}
 
 	UserHandler struct {
@@ -89,14 +92,7 @@ func (uh *UserHandler) RefreshToken(ctx *gin.Context) {
 
 // Position
 func (ah *UserHandler) GetAllPosition(ctx *gin.Context) {
-	var payload dto.PaginationRequest
-	if err := ctx.ShouldBind(&payload); err != nil {
-		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-
-	result, err := ah.userService.GetAllPositionWithPagination(ctx.Request.Context(), payload)
+	result, err := ah.userService.GetAllPosition(ctx.Request.Context())
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_LIST_POSITION, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -107,8 +103,20 @@ func (ah *UserHandler) GetAllPosition(ctx *gin.Context) {
 		Status:   true,
 		Messsage: dto.MESSAGE_SUCCESS_GET_LIST_POSITION,
 		Data:     result.Data,
-		Meta:     result.PaginationResponse,
 	}
 
+	ctx.JSON(http.StatusOK, res)
+}
+
+// User
+func (uh *UserHandler) GetDetailUser(ctx *gin.Context) {
+	result, err := uh.userService.GetDetailUser(ctx)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DETAIL_USER, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_DETAIL_USER, result)
 	ctx.JSON(http.StatusOK, res)
 }
