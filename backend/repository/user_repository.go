@@ -12,12 +12,16 @@ import (
 
 type (
 	IUserRepository interface {
+		// GET / Read
 		CheckEmail(ctx context.Context, tx *gorm.DB, email string) (entity.User, bool, error)
-		RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
 		GetPositionByID(ctx context.Context, tx *gorm.DB, positionID string) (entity.Position, error)
 		GetRoleByName(ctx context.Context, tx *gorm.DB, roleName string) (entity.Role, error)
 		GetPermissionsByRoleID(ctx context.Context, tx *gorm.DB, roleID string) ([]string, error)
 		GetAllPositionWithPagination(ctx context.Context, tx *gorm.DB, req dto.PaginationRequest) (dto.AllPositionRepositoryResponse, error)
+		GetRoleByID(ctx context.Context, tx *gorm.DB, roleID string) (entity.Role, error)
+
+		// POST / Create
+		RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
 	}
 
 	UserRepository struct {
@@ -31,6 +35,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	}
 }
 
+// GET / Read
 func (ur *UserRepository) CheckEmail(ctx context.Context, tx *gorm.DB, email string) (entity.User, bool, error) {
 	if tx == nil {
 		tx = ur.db
@@ -43,20 +48,6 @@ func (ur *UserRepository) CheckEmail(ctx context.Context, tx *gorm.DB, email str
 
 	return user, true, nil
 }
-
-func (ur *UserRepository) RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error) {
-	if tx == nil {
-		tx = ur.db
-	}
-
-	var newUser entity.User
-	if err := tx.WithContext(ctx).Create(&user).Take(&newUser).Error; err != nil {
-		return entity.User{}, err
-	}
-
-	return user, nil
-}
-
 func (ur *UserRepository) GetPositionByID(ctx context.Context, tx *gorm.DB, positionID string) (entity.Position, error) {
 	if tx == nil {
 		tx = ur.db
@@ -69,7 +60,6 @@ func (ur *UserRepository) GetPositionByID(ctx context.Context, tx *gorm.DB, posi
 
 	return position, nil
 }
-
 func (ur *UserRepository) GetRoleByName(ctx context.Context, tx *gorm.DB, roleName string) (entity.Role, error) {
 	if tx == nil {
 		tx = ur.db
@@ -82,7 +72,6 @@ func (ur *UserRepository) GetRoleByName(ctx context.Context, tx *gorm.DB, roleNa
 
 	return role, nil
 }
-
 func (ur *UserRepository) GetPermissionsByRoleID(ctx context.Context, tx *gorm.DB, roleID string) ([]string, error) {
 	if tx == nil {
 		tx = ur.db
@@ -95,7 +84,6 @@ func (ur *UserRepository) GetPermissionsByRoleID(ctx context.Context, tx *gorm.D
 
 	return endpoints, nil
 }
-
 func (ar *UserRepository) GetAllPositionWithPagination(ctx context.Context, tx *gorm.DB, req dto.PaginationRequest) (dto.AllPositionRepositoryResponse, error) {
 	if tx == nil {
 		tx = ar.db
@@ -139,4 +127,30 @@ func (ar *UserRepository) GetAllPositionWithPagination(ctx context.Context, tx *
 			Count:   count,
 		},
 	}, err
+}
+func (ur *UserRepository) GetRoleByID(ctx context.Context, tx *gorm.DB, roleID string) (entity.Role, error) {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	var role entity.Role
+	if err := tx.WithContext(ctx).Where("id = ?", roleID).Take(&role).Error; err != nil {
+		return entity.Role{}, err
+	}
+
+	return role, nil
+}
+
+// POST / Create
+func (ur *UserRepository) RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error) {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	var newUser entity.User
+	if err := tx.WithContext(ctx).Create(&user).Take(&newUser).Error; err != nil {
+		return entity.User{}, err
+	}
+
+	return user, nil
 }

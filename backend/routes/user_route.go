@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/Amierza/hadirin/backend/handler"
+	"github.com/Amierza/hadirin/backend/middleware"
 	"github.com/Amierza/hadirin/backend/service"
 	"github.com/gin-gonic/gin"
 )
@@ -9,8 +10,17 @@ import (
 func User(route *gin.Engine, userHandler handler.IUserHandler, jwtService service.IJWTService) {
 	routes := route.Group("/api/v1/user")
 	{
+		// Authentication
 		routes.POST("/register", userHandler.Register)
 		routes.POST("/login", userHandler.Login)
+		routes.POST("/refresh-token", userHandler.RefreshToken)
+
+		// Position
 		routes.GET("/get-all-position", userHandler.GetAllPosition)
+
+		routes.Use(middleware.Authentication(jwtService), middleware.RouteAccessControl(jwtService))
+		{
+
+		}
 	}
 }
