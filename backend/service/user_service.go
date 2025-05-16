@@ -22,6 +22,9 @@ type (
 
 		// User
 		GetDetailUser(ctx context.Context) (dto.AllUserResponse, error)
+
+		// Permit
+		GetAllPermit(ctx context.Context, req dto.PermitMonthRequest) (dto.PermitsResponse, error)
 	}
 
 	UserService struct {
@@ -242,5 +245,53 @@ func (us *UserService) GetDetailUser(ctx context.Context) (dto.AllUserResponse, 
 			ID:   user.RoleID,
 			Name: user.Role.Name,
 		},
+	}, nil
+}
+
+// Permit
+func (us *UserService) GetAllPermit(ctx context.Context, req dto.PermitMonthRequest) (dto.PermitsResponse, error) {
+	token := ctx.Value("Authorization").(string)
+
+	userID, err := us.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		return dto.PermitsResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	data, err := us.userRepo.GetAllPermit(ctx, nil, userID, req)
+	if err != nil {
+		return dto.PermitsResponse{}, dto.ErrGetAllPermit
+	}
+
+	var datas []dto.PermitResponse
+	for _, permit := range data.Permits {
+		data := dto.PermitResponse{
+			ID:     permit.ID,
+			Date:   permit.Date,
+			Status: permit.Status,
+			Title:  permit.Title,
+			Desc:   permit.Desc,
+			User: dto.AllUserResponse{
+				ID:          permit.User.ID,
+				Name:        permit.User.Name,
+				Email:       permit.User.Email,
+				Password:    permit.User.Password,
+				PhoneNumber: permit.User.PhoneNumber,
+				IsVerified:  permit.User.IsVerified,
+				Position: dto.PositionResponse{
+					ID:   permit.User.PositionID,
+					Name: permit.User.Position.Name,
+				},
+				Role: dto.RoleResponse{
+					ID:   permit.User.RoleID,
+					Name: permit.User.Role.Name,
+				},
+			},
+		}
+
+		datas = append(datas, data)
+	}
+
+	return dto.PermitsResponse{
+		Data: datas,
 	}, nil
 }

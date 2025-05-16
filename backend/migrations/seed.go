@@ -26,5 +26,10 @@ func Seed(db *gorm.DB) error {
 		return err
 	}
 
+	err = SeedFromJSON[entity.Permit](db, "./migrations/json/permits.json", entity.Permit{}, "UserID", "Title")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

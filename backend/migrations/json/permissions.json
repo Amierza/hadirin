@@ -3,5 +3,10 @@
     "permission_id": "0a42cdea-bbb8-40d5-a39e-8c9d01fc2021",
     "permission_endpoint": "/api/v1/user/get-detail-user",
     "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
+  },
+  {
+    "permission_id": "400b4038-de3a-4e18-a61e-ef243679fc56",
+    "permission_endpoint": "/api/v1/user/get-all-permit",
+    "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
   }
 ]

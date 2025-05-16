@@ -21,6 +21,9 @@ type (
 
 		// User
 		GetDetailUser(ctx *gin.Context)
+
+		// Permit
+		GetAllPermit(ctx *gin.Context)
 	}
 
 	UserHandler struct {
@@ -53,7 +56,7 @@ func (eh *UserHandler) Register(ctx *gin.Context) {
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_REGISTER_USER, result)
 	ctx.JSON(http.StatusOK, res)
 }
-func (eh *UserHandler) Login(ctx *gin.Context) {
+func (uh *UserHandler) Login(ctx *gin.Context) {
 	var payload dto.UserLoginRequest
 	if err := ctx.ShouldBind(&payload); err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
@@ -61,7 +64,7 @@ func (eh *UserHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	result, err := eh.userService.Login(ctx.Request.Context(), payload)
+	result, err := uh.userService.Login(ctx.Request.Context(), payload)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_LOGIN_USER, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -91,8 +94,8 @@ func (uh *UserHandler) RefreshToken(ctx *gin.Context) {
 }
 
 // Position
-func (ah *UserHandler) GetAllPosition(ctx *gin.Context) {
-	result, err := ah.userService.GetAllPosition(ctx.Request.Context())
+func (uh *UserHandler) GetAllPosition(ctx *gin.Context) {
+	result, err := uh.userService.GetAllPosition(ctx.Request.Context())
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_LIST_POSITION, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -118,5 +121,25 @@ func (uh *UserHandler) GetDetailUser(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_DETAIL_USER, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+// Permit
+func (uh *UserHandler) GetAllPermit(ctx *gin.Context) {
+	var payload dto.PermitMonthRequest
+	if err := ctx.ShouldBind(&payload); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := uh.userService.GetAllPermit(ctx, payload)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_LIST_PERMIT, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_LIST_PERMIT, result)
 	ctx.JSON(http.StatusOK, res)
 }
