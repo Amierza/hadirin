@@ -2,6 +2,7 @@ package dto
 
 import (
 	"errors"
+	"time"
 
 	"github.com/Amierza/hadirin/backend/entity"
 	"github.com/google/uuid"
@@ -22,6 +23,7 @@ const (
 	MESSAGE_FAILED_INAVLID_ROUTE_FORMAT_TOKEN = "gagal invalid format route di dalamh token"
 	MESSAGE_FAILED_ACCESS_DENIED              = "gagal akses ditolak"
 	MESSAGE_FAILED_GET_DETAIL_USER            = "gagal mendapatkan user detail"
+	MESSAGE_FAILED_GET_LIST_PERMIT            = "gagal mendapatkan list perizinan"
 
 	// success
 	MESSAGE_SUCCESS_REGISTER_USER     = "berhasil mendaftarkan user"
@@ -29,6 +31,7 @@ const (
 	MESSAGE_SUCCESS_GET_LIST_POSITION = "berhasil mendapatkan list posisi"
 	MESSAGE_SUCCESS_REFRESH_TOKEN     = "berhasil refresh token"
 	MESSAGE_SUCCESS_GET_DETAIL_USER   = "berhasil mendapatkan user detail"
+	MESSAGE_SUCCESS_GET_LIST_PERMIT   = "berhasil mendapatkan list perizinan"
 )
 
 var (
@@ -56,6 +59,7 @@ var (
 	ErrGetRoleIDFromToken      = errors.New("gagal mendapatkan role id dari token")
 	ErrGetRoleFromID           = errors.New("gagal mendapatkan role dari id")
 	ErrUserNotFound            = errors.New("gagal user tidak ditemukan")
+	ErrGetAllPermit            = errors.New("gagal mendapatkan semua perizinan")
 )
 
 type (
@@ -65,20 +69,6 @@ type (
 		Password    string    `json:"password" form:"password"`
 		PhoneNumber string    `json:"phone_number" form:"phone_number"`
 		PositionID  uuid.UUID `json:"position_id" form:"position_id"`
-	}
-
-	PositionResponse struct {
-		ID   *uuid.UUID `json:"position_id"`
-		Name string     `json:"position_name"`
-	}
-
-	PositionsResponse struct {
-		Data []PositionResponse `json:"data"`
-	}
-
-	RoleResponse struct {
-		ID   *uuid.UUID `json:"role_id"`
-		Name string     `json:"role_name"`
 	}
 
 	AllUserResponse struct {
@@ -103,8 +93,17 @@ type (
 		RefreshToken string `json:"refresh_token"`
 	}
 
-	PositionPaginationResponse struct {
-		PaginationResponse
+	RoleResponse struct {
+		ID   *uuid.UUID `json:"role_id"`
+		Name string     `json:"role_name"`
+	}
+
+	PositionResponse struct {
+		ID   *uuid.UUID `json:"position_id"`
+		Name string     `json:"position_name"`
+	}
+
+	PositionsResponse struct {
 		Data []PositionResponse `json:"data"`
 	}
 
@@ -118,5 +117,26 @@ type (
 
 	RefreshTokenResponse struct {
 		AccessToken string `json:"access_token"`
+	}
+
+	PermitResponse struct {
+		ID     uuid.UUID       `json:"permit_id"`
+		Date   time.Time       `json:"permit_date"`
+		Status int             `json:"permit_status"`
+		Title  string          `json:"permit_title"`
+		Desc   string          `json:"permit_desc"`
+		User   AllUserResponse `json:"user"`
+	}
+
+	PermitsResponse struct {
+		Data []PermitResponse `json:"data"`
+	}
+
+	AllPermitRepositoryResponse struct {
+		Permits []entity.Permit
+	}
+
+	PermitMonthRequest struct {
+		Month string `form:"month"`
 	}
 )

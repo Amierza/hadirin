@@ -2,9 +2,13 @@ package dto
 
 type (
 	PaginationRequest struct {
-		Search  string `form:"search"`
-		Page    int    `form:"page"`
-		PerPage int    `form:"per_page"`
+		QueryParam
+		Page    int `form:"page"`
+		PerPage int `form:"per_page"`
+	}
+
+	QueryParam struct {
+		Search string `form:"search"`
 	}
 
 	PaginationResponse struct {

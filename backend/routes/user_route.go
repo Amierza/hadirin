@@ -22,6 +22,9 @@ func User(route *gin.Engine, userHandler handler.IUserHandler, jwtService servic
 		{
 			// User
 			routes.GET("/get-detail-user", userHandler.GetDetailUser)
+
+			// Permit
+			routes.GET("/get-all-permit", userHandler.GetAllPermit)
 		}
 	}
 }

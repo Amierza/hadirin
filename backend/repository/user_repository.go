@@ -19,6 +19,7 @@ type (
 		GetAllPosition(ctx context.Context, tx *gorm.DB) (dto.AllPositionRepositoryResponse, error)
 		GetRoleByID(ctx context.Context, tx *gorm.DB, roleID string) (entity.Role, error)
 		GetUserByID(ctx context.Context, tx *gorm.DB, userID string) (entity.User, error)
+		GetAllPermit(ctx context.Context, tx *gorm.DB, userID string, req dto.PermitMonthRequest) (dto.AllPermitRepositoryResponse, error)
 
 		// POST / Create
 		RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
@@ -84,9 +85,9 @@ func (ur *UserRepository) GetPermissionsByRoleID(ctx context.Context, tx *gorm.D
 
 	return endpoints, nil
 }
-func (ar *UserRepository) GetAllPosition(ctx context.Context, tx *gorm.DB) (dto.AllPositionRepositoryResponse, error) {
+func (ur *UserRepository) GetAllPosition(ctx context.Context, tx *gorm.DB) (dto.AllPositionRepositoryResponse, error) {
 	if tx == nil {
-		tx = ar.db
+		tx = ur.db
 	}
 
 	var positions []entity.Position
@@ -123,6 +124,34 @@ func (ur *UserRepository) GetUserByID(ctx context.Context, tx *gorm.DB, userID s
 	}
 
 	return user, nil
+}
+func (ur *UserRepository) GetAllPermit(ctx context.Context, tx *gorm.DB, userID string, req dto.PermitMonthRequest) (dto.AllPermitRepositoryResponse, error) {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	var permits []entity.Permit
+	var err error
+
+	query := tx.WithContext(ctx).Model(&entity.Permit{}).Preload("User.Position").Preload("User.Role").Where("user_id = ?", userID)
+
+	if req.Month != "" {
+		validMonths := map[string]bool{
+			"01": true, "02": true, "03": true, "04": true, "05": true, "06": true,
+			"07": true, "08": true, "09": true, "10": true, "11": true, "12": true,
+		}
+		if validMonths[req.Month] {
+			query = query.Where("EXTRACT(MONTH FROM created_at) = ?", req.Month)
+		}
+	}
+
+	if err := query.Order("created_at DESC").Find(&permits).Error; err != nil {
+		return dto.AllPermitRepositoryResponse{}, err
+	}
+
+	return dto.AllPermitRepositoryResponse{
+		Permits: permits,
+	}, err
 }
 
 // POST / Create
