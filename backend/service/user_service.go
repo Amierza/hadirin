@@ -12,8 +12,12 @@ import (
 
 type (
 	IUserService interface {
+		// Authentication
 		Register(ctx context.Context, req dto.UserRegisterRequest) (dto.AllUserResponse, error)
 		Login(ctx context.Context, req dto.UserLoginRequest) (dto.UserLoginResponse, error)
+		RefreshToken(ctx context.Context, req dto.RefreshTokenRequest) (dto.RefreshTokenResponse, error)
+
+		// Position
 		GetAllPositionWithPagination(ctx context.Context, req dto.PaginationRequest) (dto.PositionPaginationResponse, error)
 	}
 
@@ -30,6 +34,7 @@ func NewUserService(userRepo repository.IUserRepository, jwtService IJWTService)
 	}
 }
 
+// Authentication
 func (us *UserService) Register(ctx context.Context, req dto.UserRegisterRequest) (dto.AllUserResponse, error) {
 	if req.Name == "" || req.Email == "" || req.Password == "" || req.PositionID == uuid.Nil {
 		return dto.AllUserResponse{}, dto.ErrFieldIsEmpty
@@ -102,7 +107,6 @@ func (us *UserService) Register(ctx context.Context, req dto.UserRegisterRequest
 
 	return res, nil
 }
-
 func (us *UserService) Login(ctx context.Context, req dto.UserLoginRequest) (dto.UserLoginResponse, error) {
 	if req.Email == "" || req.Password == "" {
 		return dto.UserLoginResponse{}, dto.ErrFieldIsEmpty
@@ -146,7 +150,46 @@ func (us *UserService) Login(ctx context.Context, req dto.UserLoginRequest) (dto
 		RefreshToken: refreshToken,
 	}, nil
 }
+func (us *UserService) RefreshToken(ctx context.Context, req dto.RefreshTokenRequest) (dto.RefreshTokenResponse, error) {
+	_, err := us.jwtService.ValidateToken(req.RefreshToken)
 
+	if err != nil {
+		return dto.RefreshTokenResponse{}, dto.ErrValidateToken
+	}
+
+	userID, err := us.jwtService.GetUserIDByToken(req.RefreshToken)
+	if err != nil {
+		return dto.RefreshTokenResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	roleID, err := us.jwtService.GetRoleIDByToken(req.RefreshToken)
+	if err != nil {
+		return dto.RefreshTokenResponse{}, dto.ErrGetRoleIDFromToken
+	}
+
+	role, err := us.userRepo.GetRoleByID(ctx, nil, roleID)
+	if err != nil {
+		return dto.RefreshTokenResponse{}, dto.ErrGetRoleFromID
+	}
+
+	if role.Name != "user" {
+		return dto.RefreshTokenResponse{}, dto.ErrDeniedAccess
+	}
+
+	endpoints, err := us.userRepo.GetPermissionsByRoleID(ctx, nil, roleID)
+	if err != nil {
+		return dto.RefreshTokenResponse{}, dto.ErrGetPermissionsByRoleID
+	}
+
+	accessToken, _, err := us.jwtService.GenerateToken(userID, roleID, endpoints)
+	if err != nil {
+		return dto.RefreshTokenResponse{}, dto.ErrGenerateAccessToken
+	}
+
+	return dto.RefreshTokenResponse{AccessToken: accessToken}, nil
+}
+
+// Position
 func (as *UserService) GetAllPositionWithPagination(ctx context.Context, req dto.PaginationRequest) (dto.PositionPaginationResponse, error) {
 	dataWithPaginate, err := as.userRepo.GetAllPositionWithPagination(ctx, nil, req)
 	if err != nil {

@@ -9,19 +9,24 @@ import (
 
 const (
 	// failed
-	MESSAGE_FAILED_GET_DATA_FROM_BODY  = "gagal mendapatkan data dari body"
-	MESSAGE_FAILED_PROSES_REQUEST      = "gagal memproses permintaan"
-	MESSAGE_FAILED_TOKEN_NOT_FOUND     = "gagal, token tidak ditemukan"
-	MESSAGE_FAILED_TOKEN_NOT_VALID     = "gagal, token tidak valid"
-	MESSAGE_FAILED_TOKEN_DENIED_ACCESS = "gagal, akses token ditolak"
-	MESSAGE_FAILED_REGISTER_USER       = "gagal mendaftarkan user"
-	MESSAGE_FAILED_LOGIN_USER          = "gagal login user"
-	MESSAGE_FAILED_GET_LIST_POSITION   = "gagal mendapatkan list posisi"
+	MESSAGE_FAILED_GET_DATA_FROM_BODY         = "gagal mendapatkan data dari body"
+	MESSAGE_FAILED_PROSES_REQUEST             = "gagal memproses permintaan"
+	MESSAGE_FAILED_TOKEN_NOT_FOUND            = "gagal, token tidak ditemukan"
+	MESSAGE_FAILED_TOKEN_NOT_VALID            = "gagal, token tidak valid"
+	MESSAGE_FAILED_TOKEN_DENIED_ACCESS        = "gagal, akses token ditolak"
+	MESSAGE_FAILED_REGISTER_USER              = "gagal mendaftarkan user"
+	MESSAGE_FAILED_LOGIN_USER                 = "gagal login user"
+	MESSAGE_FAILED_GET_LIST_POSITION          = "gagal mendapatkan list posisi"
+	MESSAGE_FAILED_REFRESH_TOKEN              = "gagal refresh token"
+	MESSAGE_FAILED_INAVLID_ENPOINTS_TOKEN     = "gagal invalid endpoints di dalam token"
+	MESSAGE_FAILED_INAVLID_ROUTE_FORMAT_TOKEN = "gagal invalid format route di dalamh token"
+	MESSAGE_FAILED_ACCESS_DENIED              = "gagal akses ditolak"
 
 	// success
 	MESSAGE_SUCCESS_REGISTER_USER     = "berhasil mendaftarkan user"
 	MESSAGE_SUCCESS_LOGIN_USER        = "berhasil login user"
 	MESSAGE_SUCCESS_GET_LIST_POSITION = "berhasil mendapatkan list posisi"
+	MESSAGE_SUCCESS_REFRESH_TOKEN     = "success refresh token"
 )
 
 var (
@@ -45,6 +50,9 @@ var (
 	ErrGetRoleFromName         = errors.New("gagal mendapatkan role berdasarkan nama")
 	ErrGetPermissionsByRoleID  = errors.New("gagal mendapatkan permission berdasarkan role id")
 	ErrDeniedAccess            = errors.New("access ditolak")
+	ErrGetUserIDFromToken      = errors.New("gagal mendapatkan user id dari token")
+	ErrGetRoleIDFromToken      = errors.New("gagal mendapatkan role id dari token")
+	ErrGetRoleFromID           = errors.New("gagal mendapatkan role dari id")
 )
 
 type (
@@ -96,5 +104,13 @@ type (
 	AllPositionRepositoryResponse struct {
 		PaginationResponse
 		Positions []entity.Position
+	}
+
+	RefreshTokenRequest struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	RefreshTokenResponse struct {
+		AccessToken string `json:"access_token"`
 	}
 )
