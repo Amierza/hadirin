@@ -21,12 +21,14 @@ const (
 	MESSAGE_FAILED_INAVLID_ENPOINTS_TOKEN     = "gagal invalid endpoints di dalam token"
 	MESSAGE_FAILED_INAVLID_ROUTE_FORMAT_TOKEN = "gagal invalid format route di dalamh token"
 	MESSAGE_FAILED_ACCESS_DENIED              = "gagal akses ditolak"
+	MESSAGE_FAILED_GET_DETAIL_USER            = "gagal mendapatkan user detail"
 
 	// success
 	MESSAGE_SUCCESS_REGISTER_USER     = "berhasil mendaftarkan user"
 	MESSAGE_SUCCESS_LOGIN_USER        = "berhasil login user"
 	MESSAGE_SUCCESS_GET_LIST_POSITION = "berhasil mendapatkan list posisi"
-	MESSAGE_SUCCESS_REFRESH_TOKEN     = "success refresh token"
+	MESSAGE_SUCCESS_REFRESH_TOKEN     = "berhasil refresh token"
+	MESSAGE_SUCCESS_GET_DETAIL_USER   = "berhasil mendapatkan user detail"
 )
 
 var (
@@ -53,6 +55,7 @@ var (
 	ErrGetUserIDFromToken      = errors.New("gagal mendapatkan user id dari token")
 	ErrGetRoleIDFromToken      = errors.New("gagal mendapatkan role id dari token")
 	ErrGetRoleFromID           = errors.New("gagal mendapatkan role dari id")
+	ErrUserNotFound            = errors.New("gagal user tidak ditemukan")
 )
 
 type (
@@ -67,6 +70,10 @@ type (
 	PositionResponse struct {
 		ID   *uuid.UUID `json:"position_id"`
 		Name string     `json:"position_name"`
+	}
+
+	PositionsResponse struct {
+		Data []PositionResponse `json:"data"`
 	}
 
 	RoleResponse struct {
@@ -102,7 +109,6 @@ type (
 	}
 
 	AllPositionRepositoryResponse struct {
-		PaginationResponse
 		Positions []entity.Position
 	}
 
