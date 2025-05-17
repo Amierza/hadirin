@@ -2,7 +2,7 @@
 import 'package:frontend/models/position_model.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import '../services/register_api_service.dart';
+import '../services/auth_service.dart';
 import '../services/position_api_service.dart';
 
 class RegisterController extends GetxController {
@@ -63,7 +63,7 @@ class RegisterController extends GetxController {
     isLoading.value = true;
 
     try {
-      final result = await RegisterService.register(
+      final result = await AuthService.register(
         name,
         email,
         password,

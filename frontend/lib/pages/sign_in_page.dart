@@ -4,15 +4,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/pages/register_page.dart';
-import 'package:frontend/pages/home_page.dart';
 
-class SignInController extends GetxController {
-  var obscureText = true.obs;
-
-  void togglePasswordVisibility() {
-    obscureText.value = !obscureText.value;
-  }
-}
+import '../controllers/sign_in_controller.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
@@ -23,6 +16,7 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   final SignInController controller = Get.put(SignInController());
+  bool _isObsecure = true;
   final _formKey = GlobalKey<FormState>();
 
   String? validateEmail(String? value) {
@@ -30,7 +24,6 @@ class _SignInPageState extends State<SignInPage> {
       return 'Masukkan email anda';
     }
 
-    // Basic email regex pattern
     final RegExp emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
     if (!emailRegex.hasMatch(value)) {
       return 'Masukkan email yang benar';
@@ -98,6 +91,7 @@ class _SignInPageState extends State<SignInPage> {
                 ),
               ),
               TextFormField(
+                controller: controller.emailController,
                 decoration: InputDecoration(
                   hintText: 'Enter Your E-mail',
                   hintStyle: TextStyle(color: tertiaryTextColor),
@@ -119,30 +113,28 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                 ),
               ),
-              Obx(
-                () => TextFormField(
-                  obscureText: controller.obscureText.value,
-                  decoration: InputDecoration(
-                    hintText: 'Enter Your Password',
-                    hintStyle: TextStyle(color: tertiaryTextColor),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: secondaryBackgroundColor),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.obscureText.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color:
-                            controller.obscureText.value
-                                ? tertiaryTextColor
-                                : primaryTextColor,
-                      ),
-                      onPressed: controller.togglePasswordVisibility,
-                    ),
+              TextFormField(
+                controller: controller.passwordController,
+                obscureText: _isObsecure,
+                decoration: InputDecoration(
+                  hintText: 'Enter Your Password',
+                  hintStyle: TextStyle(color: tertiaryTextColor),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: secondaryBackgroundColor),
                   ),
-                  validator: validatePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isObsecure ? Icons.visibility_off : Icons.visibility,
+                      color: _isObsecure ? tertiaryTextColor : primaryTextColor,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isObsecure = !_isObsecure;
+                      });
+                    },
+                  ),
                 ),
+                validator: validatePassword,
               ),
               const SizedBox(height: 20),
               Align(
@@ -168,7 +160,7 @@ class _SignInPageState extends State<SignInPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      Get.to(() => HomePage());
+                      controller.loginUser();
                     }
                   },
                   style: ElevatedButton.styleFrom(
