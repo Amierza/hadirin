@@ -44,6 +44,8 @@ dependencies:
   google_maps_flutter: ^2.10.1
   latlong2: ^0.9.1
   http: ^1.3.0
+  flutter_dotenv: ^5.2.1
+  get_storage: ^2.1.1
 
 dev_dependencies:
   
@@ -74,6 +76,7 @@ flutter:
     # - assets/logo_green.png
     # - assets/logo_white.png
     - assets/
+    - .env.local
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

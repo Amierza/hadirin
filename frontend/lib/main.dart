@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:frontend/controllers/register_controller.dart';
+import 'package:frontend/controllers/sign_in_controller.dart';
 import 'package:frontend/pages/presence_history_page.dart';
 import 'package:frontend/pages/presence_page.dart';
 import 'package:frontend/pages/profile_page.dart';
@@ -9,9 +12,33 @@ import 'package:frontend/pages/forget_password_page.dart';
 import 'package:frontend/pages/rename_password_page.dart';
 import 'package:frontend/pages/register_page.dart';
 import 'package:frontend/pages/home_page.dart';
+import 'package:get_storage/get_storage.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await dotenv.load(fileName: ".env.local");
+    print("Berhasil load env");
+  } catch(error) {
+    print("Gagal load env $error");
+  }
+
+  try {
+    await GetStorage.init();
+    print("Berhasil load Getstorage");
+  } catch(error) {
+    print("Gagal init GetStorage $error");
+  }
+
+  runApp(await buildApp());
+}
+
+Future<Widget> buildApp() async {
+  Get.lazyPut<RegisterController>(() => RegisterController(), fenix: false);
+  Get.lazyPut<SignInController>(() => SignInController(), fenix: false);
+
+  return const MyApp();
 }
 
 class MyApp extends StatelessWidget {
