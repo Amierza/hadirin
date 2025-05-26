@@ -179,6 +179,9 @@ class _RenamePasswordPageState extends State<RenamePasswordPage> {
                           return StatusDialog(
                             isSuccess: true,
                             message: 'Your password is succesfully created',
+                            onPressed: () {
+                              Get.toNamed("/login");
+                            },
                           );
                         },
                       );
@@ -189,6 +192,9 @@ class _RenamePasswordPageState extends State<RenamePasswordPage> {
                           return StatusDialog(
                             isSuccess: false,
                             message: 'Please input the correct password',
+                            onPressed: () {
+                              Get.back();
+                            },
                           );
                         },
                       );

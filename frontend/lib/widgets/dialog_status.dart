@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:get/get.dart';
-import 'package:frontend/pages/sign_in_page.dart';
 
 class StatusDialog extends StatelessWidget {
   final bool isSuccess;
   final String message;
+  final VoidCallback onPressed;
 
-  const StatusDialog({Key? key, required this.isSuccess, required this.message})
-    : super(key: key);
+  const StatusDialog({
+    Key? key,
+    required this.isSuccess,
+    required this.message,
+    required this.onPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,21 +30,24 @@ class StatusDialog extends StatelessWidget {
           Text(
             isSuccess ? 'Success' : 'Failure',
             style: GoogleFonts.poppins(
-              fontSize: 30,
+              fontSize: 24,
               fontWeight: bold,
-              color: isSuccess ? successColor : dangerColor,
+              color: primaryTextColor,
             ),
           ),
           SizedBox(height: 5),
-          Text(message, textAlign: TextAlign.center),
+          Text(
+            message,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              fontWeight: semiBold,
+              color: primaryTextColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
           SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              if (isSuccess) {
-                Get.to(() => SignInPage());
-              }
-            },
+            onPressed: onPressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: isSuccess ? primaryColor : dangerColor,
               shape: RoundedRectangleBorder(
@@ -52,7 +58,7 @@ class StatusDialog extends StatelessWidget {
               'Continue',
               style: GoogleFonts.poppins(
                 fontSize: 18,
-                fontWeight: regular,
+                fontWeight: medium,
                 color: backgroundColor,
               ),
             ),

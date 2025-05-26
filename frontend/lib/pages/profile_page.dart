@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/widgets/navbar.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -53,7 +54,9 @@ class ProfilePage extends StatelessWidget {
                         foregroundColor: Colors.white,
                         iconColor: Colors.white,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.toNamed('/edit_profile');
+                      },
                       child: Row(
                         children: [
                           Icon(Icons.repeat, size: 18),
