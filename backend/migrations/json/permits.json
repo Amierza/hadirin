@@ -5,7 +5,7 @@
     "permit_status": 1,
     "permit_title": "Izin Sakit",
     "permit_desc": "Mengalami demam tinggi dan perlu istirahat.",
-    "user_id": "08565081-c739-4b0d-a878-63b2ef4b0b1c"
+    "user_id": "e7c3be62-6e20-4e21-a83d-daa9b95c591b"
   },
   {
     "permit_id": "a2e2b9c4-e6e3-4ccf-b5d3-bc2352dd43a3",
@@ -13,7 +13,7 @@
     "permit_status": 0,
     "permit_title": "Izin Acara Keluarga",
     "permit_desc": "Menghadiri pernikahan saudara kandung.",
-    "user_id": "08565081-c739-4b0d-a878-63b2ef4b0b1c"
+    "user_id": "e7c3be62-6e20-4e21-a83d-daa9b95c591b"
   },
   {
     "permit_id": "f1385aaf-cb3f-496d-86be-cda1e9b8cbb1",
@@ -21,6 +21,6 @@
     "permit_status": 2,
     "permit_title": "Izin Kegiatan Luar",
     "permit_desc": "Menghadiri seminar eksternal terkait bidang pekerjaan.",
-    "user_id": "08565081-c739-4b0d-a878-63b2ef4b0b1c"
+    "user_id": "e7c3be62-6e20-4e21-a83d-daa9b95c591b"
   }
 ]

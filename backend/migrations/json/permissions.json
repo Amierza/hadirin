@@ -5,8 +5,23 @@
     "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
   },
   {
+    "permission_id": "7bf7ae39-24c0-47f9-a146-2d2ee7fc9d1d",
+    "permission_endpoint": "/api/v1/user/create-permit",
+    "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
+  },
+  {
     "permission_id": "400b4038-de3a-4e18-a61e-ef243679fc56",
     "permission_endpoint": "/api/v1/user/get-all-permit",
+    "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
+  },
+  {
+    "permission_id": "053a2892-7310-465c-a222-5265dfdaaab3",
+    "permission_endpoint": "/api/v1/user/update-permit/:id",
+    "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
+  },
+  {
+    "permission_id": "0617ee44-7f24-41e1-a518-5c1ce33cf219",
+    "permission_endpoint": "/api/v1/user/delete-permit/:id",
     "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
   }
 ]
