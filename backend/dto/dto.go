@@ -27,6 +27,7 @@ const (
 	MESSAGE_FAILED_GET_LIST_POSITION = "gagal mendapatkan list posisi"
 	// User
 	MESSAGE_FAILED_GET_DETAIL_USER = "gagal mendapatkan user detail"
+	MESSAGE_FAILED_UPDATE_USER     = "gagal perbarui user"
 	// Permit
 	MESSAGE_FAILED_CREATE_PERMIT     = "gagal membuat perizinan"
 	MESSAGE_FAILED_GET_LIST_PERMIT   = "gagal mendapatkan list perizinan"
@@ -43,6 +44,7 @@ const (
 	MESSAGE_SUCCESS_GET_LIST_POSITION = "berhasil mendapatkan list posisi"
 	// User
 	MESSAGE_SUCCESS_GET_DETAIL_USER = "berhasil mendapatkan user detail"
+	MESSAGE_SUCCESS_UPDATE_USER     = "berhasil perbarui user"
 	// Permit
 	MESSAGE_SUCCESS_CREATE_PERMIT     = "berhasil membuat perizinan"
 	MESSAGE_SUCCESS_GET_LIST_PERMIT   = "berhasil mendapatkan list perizinan"
@@ -87,6 +89,7 @@ var (
 	// User
 	ErrGetUserIDFromToken = errors.New("gagal mendapatkan user id dari token")
 	ErrUserNotFound       = errors.New("gagal user tidak ditemukan")
+	ErrUpdateUser         = errors.New("gagal perbarui user")
 	// Permit
 	ErrCreatePermit   = errors.New("gagal membuat perizinan")
 	ErrFormatDate     = errors.New("gagal memformat date perizinan")
@@ -128,6 +131,15 @@ type (
 		IsVerified  bool             `json:"user_is_verified"`
 		Position    PositionResponse `json:"position"`
 		Role        RoleResponse     `json:"role"`
+	}
+	UpdateUserRequest struct {
+		Name        string     `json:"name,omitempty"`
+		Email       string     `json:"email"`
+		Password    string     `json:"password"`
+		PhoneNumber string     `json:"phone_number"`
+		Photo       string     `json:"photo"`
+		RoleID      *uuid.UUID `gorm:"type:uuid" json:"role_id,omitempty"`
+		PositionID  *uuid.UUID `gorm:"type:uuid" json:"position_id,omitempty"`
 	}
 	// Role
 	RoleResponse struct {

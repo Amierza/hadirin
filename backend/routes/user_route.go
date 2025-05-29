@@ -22,6 +22,7 @@ func User(route *gin.Engine, userHandler handler.IUserHandler, jwtService servic
 		{
 			// User
 			routes.GET("/get-detail-user", userHandler.GetDetailUser)
+			routes.PATCH("/update-user", userHandler.UpdateUser)
 
 			// Permit
 			routes.POST("/create-permit", userHandler.CreatePermit)

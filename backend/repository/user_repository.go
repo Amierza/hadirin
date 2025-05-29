@@ -28,6 +28,7 @@ type (
 
 		// PATCH / Update
 		UpdatePermit(ctx context.Context, tx *gorm.DB, permit entity.Permit) error
+		UpdateUser(ctx context.Context, tx *gorm.DB, user entity.User) error
 
 		// DELETE / Delete
 		DeletePermit(ctx context.Context, tx *gorm.DB, permitID string) error
@@ -214,6 +215,13 @@ func (ur *UserRepository) UpdatePermit(ctx context.Context, tx *gorm.DB, permit 
 	}
 
 	return tx.WithContext(ctx).Where("id = ?", permit.ID).Updates(&permit).Error
+}
+func (ur *UserRepository) UpdateUser(ctx context.Context, tx *gorm.DB, user entity.User) error {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	return tx.WithContext(ctx).Where("id = ?", user.ID).Updates(&user).Error
 }
 
 // DELETE / Delete
