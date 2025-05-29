@@ -26,6 +26,7 @@ func User(route *gin.Engine, userHandler handler.IUserHandler, jwtService servic
 			// Permit
 			routes.POST("/create-permit", userHandler.CreatePermit)
 			routes.GET("/get-all-permit", userHandler.GetAllPermit)
+			routes.GET("/get-detail-permit/:id", userHandler.GetDetailPermit)
 			routes.PATCH("/update-permit/:id", userHandler.UpdatePermit)
 			routes.DELETE("/delete-permit/:id", userHandler.DeletePermit)
 		}

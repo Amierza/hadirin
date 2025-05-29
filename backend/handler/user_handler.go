@@ -25,6 +25,7 @@ type (
 		// Permit
 		CreatePermit(ctx *gin.Context)
 		GetAllPermit(ctx *gin.Context)
+		GetDetailPermit(ctx *gin.Context)
 		UpdatePermit(ctx *gin.Context)
 		DeletePermit(ctx *gin.Context)
 	}
@@ -162,6 +163,18 @@ func (uh *UserHandler) GetAllPermit(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_LIST_PERMIT, result)
+	ctx.JSON(http.StatusOK, res)
+}
+func (uh *UserHandler) GetDetailPermit(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	result, err := uh.userService.GetDetailPermit(ctx, idStr)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DETAIL_PERMIT, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_DETAIL_PERMIT, result)
 	ctx.JSON(http.StatusOK, res)
 }
 func (uh *UserHandler) UpdatePermit(ctx *gin.Context) {

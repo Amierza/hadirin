@@ -26,6 +26,7 @@ type (
 		// Permit
 		CreatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error)
 		GetAllPermit(ctx context.Context, req dto.PermitMonthRequest) (dto.PermitsResponse, error)
+		GetDetailPermit(ctx context.Context, permitID string) (dto.PermitResponse, error)
 		UpdatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error)
 		DeletePermit(ctx context.Context, permitID string) (dto.PermitResponse, error)
 	}
@@ -354,6 +355,20 @@ func (us *UserService) GetAllPermit(ctx context.Context, req dto.PermitMonthRequ
 	return dto.PermitsResponse{
 		User:    user,
 		Permits: permits,
+	}, nil
+}
+func (us *UserService) GetDetailPermit(ctx context.Context, permitID string) (dto.PermitResponse, error) {
+	permit, flag, err := us.userRepo.GetPermitByID(ctx, nil, permitID)
+	if err != nil || !flag {
+		return dto.PermitResponse{}, dto.ErrPermitNotFound
+	}
+
+	return dto.PermitResponse{
+		ID:     permit.ID,
+		Date:   permit.Date,
+		Status: permit.Status,
+		Title:  permit.Title,
+		Desc:   permit.Desc,
 	}, nil
 }
 func (us *UserService) UpdatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error) {
