@@ -23,7 +23,10 @@ type (
 		GetDetailUser(ctx *gin.Context)
 
 		// Permit
+		CreatePermit(ctx *gin.Context)
 		GetAllPermit(ctx *gin.Context)
+		UpdatePermit(ctx *gin.Context)
+		DeletePermit(ctx *gin.Context)
 	}
 
 	UserHandler struct {
@@ -125,6 +128,24 @@ func (uh *UserHandler) GetDetailUser(ctx *gin.Context) {
 }
 
 // Permit
+func (uh *UserHandler) CreatePermit(ctx *gin.Context) {
+	var payload dto.PermitRequest
+	if err := ctx.ShouldBind(&payload); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := uh.userService.CreatePermit(ctx, payload)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_CREATE_PERMIT, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_CREATE_PERMIT, result)
+	ctx.JSON(http.StatusOK, res)
+}
 func (uh *UserHandler) GetAllPermit(ctx *gin.Context) {
 	var payload dto.PermitMonthRequest
 	if err := ctx.ShouldBind(&payload); err != nil {
@@ -141,5 +162,37 @@ func (uh *UserHandler) GetAllPermit(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_LIST_PERMIT, result)
+	ctx.JSON(http.StatusOK, res)
+}
+func (uh *UserHandler) UpdatePermit(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	var payload dto.PermitRequest
+	payload.ID = idStr
+	if err := ctx.ShouldBind(&payload); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := uh.userService.UpdatePermit(ctx, payload)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_UPDATE_PERMIT, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_UPDATE_PERMIT, result)
+	ctx.JSON(http.StatusOK, res)
+}
+func (uh *UserHandler) DeletePermit(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	result, err := uh.userService.DeletePermit(ctx, idStr)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_DELETE_PERMIT, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_DELETE_PERMIT, result)
 	ctx.JSON(http.StatusOK, res)
 }

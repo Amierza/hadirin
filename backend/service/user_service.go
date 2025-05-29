@@ -24,7 +24,10 @@ type (
 		GetDetailUser(ctx context.Context) (dto.AllUserResponse, error)
 
 		// Permit
+		CreatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error)
 		GetAllPermit(ctx context.Context, req dto.PermitMonthRequest) (dto.PermitsResponse, error)
+		UpdatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error)
+		DeletePermit(ctx context.Context, permitID string) (dto.PermitResponse, error)
 	}
 
 	UserService struct {
@@ -58,7 +61,7 @@ func (us *UserService) Register(ctx context.Context, req dto.UserRegisterRequest
 		return dto.AllUserResponse{}, dto.ErrPasswordToShort
 	}
 
-	_, flag, err := us.userRepo.CheckEmail(ctx, nil, req.Email)
+	_, flag, err := us.userRepo.GetUserByEmail(ctx, nil, req.Email)
 	if err == nil || flag {
 		return dto.AllUserResponse{}, dto.ErrEmailAlreadyExists
 	}
@@ -68,13 +71,13 @@ func (us *UserService) Register(ctx context.Context, req dto.UserRegisterRequest
 		return dto.AllUserResponse{}, dto.ErrFormatPhoneNumber
 	}
 
-	position, err := us.userRepo.GetPositionByID(ctx, nil, req.PositionID.String())
-	if err != nil {
+	position, flag, err := us.userRepo.GetPositionByID(ctx, nil, req.PositionID.String())
+	if err != nil || !flag {
 		return dto.AllUserResponse{}, dto.ErrPositionNotFound
 	}
 
-	role, err := us.userRepo.GetRoleByName(ctx, nil, "user")
-	if err != nil {
+	role, flag, err := us.userRepo.GetRoleByName(ctx, nil, "user")
+	if err != nil || !flag {
 		return dto.AllUserResponse{}, dto.ErrGetRoleFromName
 	}
 
@@ -121,7 +124,7 @@ func (us *UserService) Login(ctx context.Context, req dto.UserLoginRequest) (dto
 		return dto.UserLoginResponse{}, dto.ErrInvalidEmail
 	}
 
-	user, flag, err := us.userRepo.CheckEmail(ctx, nil, req.Email)
+	user, flag, err := us.userRepo.GetUserByEmail(ctx, nil, req.Email)
 	if err != nil || !flag {
 		return dto.UserLoginResponse{}, dto.ErrEmailNotRegistered
 	}
@@ -131,8 +134,8 @@ func (us *UserService) Login(ctx context.Context, req dto.UserLoginRequest) (dto
 		return dto.UserLoginResponse{}, dto.ErrPasswordNotMatch
 	}
 
-	role, err := us.userRepo.GetRoleByName(ctx, nil, "user")
-	if err != nil {
+	role, flag, err := us.userRepo.GetRoleByName(ctx, nil, "user")
+	if err != nil || !flag {
 		return dto.UserLoginResponse{}, dto.ErrGetRoleFromName
 	}
 
@@ -140,8 +143,8 @@ func (us *UserService) Login(ctx context.Context, req dto.UserLoginRequest) (dto
 		return dto.UserLoginResponse{}, dto.ErrDeniedAccess
 	}
 
-	permissions, err := us.userRepo.GetPermissionsByRoleID(ctx, nil, user.RoleID.String())
-	if err != nil {
+	permissions, flag, err := us.userRepo.GetPermissionsByRoleID(ctx, nil, user.RoleID.String())
+	if err != nil || !flag {
 		return dto.UserLoginResponse{}, dto.ErrGetPermissionsByRoleID
 	}
 
@@ -172,8 +175,8 @@ func (us *UserService) RefreshToken(ctx context.Context, req dto.RefreshTokenReq
 		return dto.RefreshTokenResponse{}, dto.ErrGetRoleIDFromToken
 	}
 
-	role, err := us.userRepo.GetRoleByID(ctx, nil, roleID)
-	if err != nil {
+	role, flag, err := us.userRepo.GetRoleByID(ctx, nil, roleID)
+	if err != nil || !flag {
 		return dto.RefreshTokenResponse{}, dto.ErrGetRoleFromID
 	}
 
@@ -181,8 +184,8 @@ func (us *UserService) RefreshToken(ctx context.Context, req dto.RefreshTokenReq
 		return dto.RefreshTokenResponse{}, dto.ErrDeniedAccess
 	}
 
-	endpoints, err := us.userRepo.GetPermissionsByRoleID(ctx, nil, roleID)
-	if err != nil {
+	endpoints, flag, err := us.userRepo.GetPermissionsByRoleID(ctx, nil, roleID)
+	if err != nil || !flag {
 		return dto.RefreshTokenResponse{}, dto.ErrGetPermissionsByRoleID
 	}
 
@@ -225,8 +228,8 @@ func (us *UserService) GetDetailUser(ctx context.Context) (dto.AllUserResponse, 
 		return dto.AllUserResponse{}, dto.ErrGetUserIDFromToken
 	}
 
-	user, err := us.userRepo.GetUserByID(ctx, nil, userId)
-	if err != nil {
+	user, flag, err := us.userRepo.GetUserByID(ctx, nil, userId)
+	if err != nil || !flag {
 		return dto.AllUserResponse{}, dto.ErrUserNotFound
 	}
 
@@ -249,6 +252,64 @@ func (us *UserService) GetDetailUser(ctx context.Context) (dto.AllUserResponse, 
 }
 
 // Permit
+func (us *UserService) CreatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error) {
+	token := ctx.Value("Authorization").(string)
+	userId, err := us.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		return dto.PermitResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	if req.Date == "" || req.Status == nil || req.Title == "" || req.Desc == "" {
+		return dto.PermitResponse{}, dto.ErrFieldIsEmpty
+	}
+
+	if len(req.Title) < 5 {
+		return dto.PermitResponse{}, dto.ErrTitleToShort
+	}
+
+	if len(req.Desc) < 15 {
+		return dto.PermitResponse{}, dto.ErrDescToShort
+	}
+
+	_, flag, err := us.userRepo.GetUserByID(ctx, nil, userId)
+	if err != nil || !flag {
+		return dto.PermitResponse{}, dto.ErrUserNotFound
+	}
+
+	userID, err := uuid.Parse(userId)
+	if err != nil {
+		return dto.PermitResponse{}, err
+	}
+
+	t, err := helpers.ParseDate(req.Date)
+	if err != nil {
+		return dto.PermitResponse{}, dto.ErrFormatDate
+	}
+
+	permit := entity.Permit{
+		ID:     uuid.New(),
+		Date:   *t,
+		Status: *req.Status,
+		Title:  req.Title,
+		Desc:   req.Desc,
+		UserID: &userID,
+	}
+
+	err = us.userRepo.CreatePermit(ctx, nil, permit)
+	if err != nil {
+		return dto.PermitResponse{}, dto.ErrCreatePermit
+	}
+
+	res := dto.PermitResponse{
+		ID:     permit.ID,
+		Date:   permit.Date,
+		Status: permit.Status,
+		Title:  permit.Title,
+		Desc:   permit.Desc,
+	}
+
+	return res, nil
+}
 func (us *UserService) GetAllPermit(ctx context.Context, req dto.PermitMonthRequest) (dto.PermitsResponse, error) {
 	token := ctx.Value("Authorization").(string)
 
@@ -262,36 +323,107 @@ func (us *UserService) GetAllPermit(ctx context.Context, req dto.PermitMonthRequ
 		return dto.PermitsResponse{}, dto.ErrGetAllPermit
 	}
 
-	var datas []dto.PermitResponse
+	var permits []dto.PermitResponse
 	for _, permit := range data.Permits {
-		data := dto.PermitResponse{
+		permits = append(permits, dto.PermitResponse{
 			ID:     permit.ID,
 			Date:   permit.Date,
 			Status: permit.Status,
 			Title:  permit.Title,
 			Desc:   permit.Desc,
-			User: dto.AllUserResponse{
-				ID:          permit.User.ID,
-				Name:        permit.User.Name,
-				Email:       permit.User.Email,
-				Password:    permit.User.Password,
-				PhoneNumber: permit.User.PhoneNumber,
-				IsVerified:  permit.User.IsVerified,
-				Position: dto.PositionResponse{
-					ID:   permit.User.PositionID,
-					Name: permit.User.Position.Name,
-				},
-				Role: dto.RoleResponse{
-					ID:   permit.User.RoleID,
-					Name: permit.User.Role.Name,
-				},
-			},
-		}
+		})
+	}
 
-		datas = append(datas, data)
+	user := dto.AllUserResponse{
+		ID:          data.Permits[0].User.ID,
+		Name:        data.Permits[0].User.Name,
+		Email:       data.Permits[0].User.Email,
+		Password:    data.Permits[0].User.Password,
+		PhoneNumber: data.Permits[0].User.PhoneNumber,
+		IsVerified:  data.Permits[0].User.IsVerified,
+		Position: dto.PositionResponse{
+			ID:   data.Permits[0].User.PositionID,
+			Name: data.Permits[0].User.Position.Name,
+		},
+		Role: dto.RoleResponse{
+			ID:   data.Permits[0].User.RoleID,
+			Name: data.Permits[0].User.Role.Name,
+		},
 	}
 
 	return dto.PermitsResponse{
-		Data: datas,
+		User:    user,
+		Permits: permits,
 	}, nil
+}
+func (us *UserService) UpdatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error) {
+	permit, flag, err := us.userRepo.GetPermitByID(ctx, nil, req.ID)
+	if err != nil || !flag {
+		return dto.PermitResponse{}, dto.ErrPermitNotFound
+	}
+
+	if req.Title != "" {
+		if len(req.Title) < 5 {
+			return dto.PermitResponse{}, dto.ErrTitleToShort
+		}
+
+		permit.Title = req.Title
+	}
+
+	if req.Desc != "" {
+		if len(req.Desc) < 15 {
+			return dto.PermitResponse{}, dto.ErrDescToShort
+		}
+
+		permit.Desc = req.Desc
+	}
+
+	if req.Date != "" {
+		t, err := helpers.ParseDate(req.Date)
+		if err != nil {
+			return dto.PermitResponse{}, dto.ErrFormatDate
+		}
+
+		permit.Date = *t
+	}
+
+	if req.Status != nil {
+		permit.Status = *req.Status
+	}
+
+	err = us.userRepo.UpdatePermit(ctx, nil, permit)
+	if err != nil {
+		return dto.PermitResponse{}, dto.ErrCreatePermit
+	}
+
+	res := dto.PermitResponse{
+		ID:     permit.ID,
+		Date:   permit.Date,
+		Status: permit.Status,
+		Title:  permit.Title,
+		Desc:   permit.Desc,
+	}
+
+	return res, nil
+}
+func (us *UserService) DeletePermit(ctx context.Context, permitID string) (dto.PermitResponse, error) {
+	permit, flag, err := us.userRepo.GetPermitByID(ctx, nil, permitID)
+	if err != nil || !flag {
+		return dto.PermitResponse{}, dto.ErrPermitNotFound
+	}
+
+	err = us.userRepo.DeletePermit(ctx, nil, permitID)
+	if err != nil {
+		return dto.PermitResponse{}, dto.ErrCreatePermit
+	}
+
+	res := dto.PermitResponse{
+		ID:     permit.ID,
+		Date:   permit.Date,
+		Status: permit.Status,
+		Title:  permit.Title,
+		Desc:   permit.Desc,
+	}
+
+	return res, nil
 }
