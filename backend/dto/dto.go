@@ -28,10 +28,11 @@ const (
 	// User
 	MESSAGE_FAILED_GET_DETAIL_USER = "gagal mendapatkan user detail"
 	// Permit
-	MESSAGE_FAILED_CREATE_PERMIT   = "gagal membuat perizinan"
-	MESSAGE_FAILED_GET_LIST_PERMIT = "gagal mendapatkan list perizinan"
-	MESSAGE_FAILED_UPDATE_PERMIT   = "gagal perbarui perizinan"
-	MESSAGE_FAILED_DELETE_PERMIT   = "gagal hapus perizinan"
+	MESSAGE_FAILED_CREATE_PERMIT     = "gagal membuat perizinan"
+	MESSAGE_FAILED_GET_LIST_PERMIT   = "gagal mendapatkan list perizinan"
+	MESSAGE_FAILED_GET_DETAIL_PERMIT = "gagal mendapatkan perizinan"
+	MESSAGE_FAILED_UPDATE_PERMIT     = "gagal perbarui perizinan"
+	MESSAGE_FAILED_DELETE_PERMIT     = "gagal hapus perizinan"
 
 	// ====================================== Success ======================================
 	// Authentication
@@ -43,10 +44,11 @@ const (
 	// User
 	MESSAGE_SUCCESS_GET_DETAIL_USER = "berhasil mendapatkan user detail"
 	// Permit
-	MESSAGE_SUCCESS_CREATE_PERMIT   = "berhasil membuat perizinan"
-	MESSAGE_SUCCESS_GET_LIST_PERMIT = "berhasil mendapatkan list perizinan"
-	MESSAGE_SUCCESS_UPDATE_PERMIT   = "berhasil perbarui perizinan"
-	MESSAGE_SUCCESS_DELETE_PERMIT   = "berhasil hapus perizinan"
+	MESSAGE_SUCCESS_CREATE_PERMIT     = "berhasil membuat perizinan"
+	MESSAGE_SUCCESS_GET_LIST_PERMIT   = "berhasil mendapatkan list perizinan"
+	MESSAGE_SUCCESS_GET_DETAIL_PERMIT = "berhasil mendapatkan perizinan"
+	MESSAGE_SUCCESS_UPDATE_PERMIT     = "berhasil perbarui perizinan"
+	MESSAGE_SUCCESS_DELETE_PERMIT     = "berhasil hapus perizinan"
 )
 
 var (
