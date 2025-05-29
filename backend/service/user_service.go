@@ -22,6 +22,7 @@ type (
 
 		// User
 		GetDetailUser(ctx context.Context) (dto.AllUserResponse, error)
+		UpdateUser(ctx context.Context, req dto.UpdateUserRequest) (dto.AllUserResponse, error)
 
 		// Permit
 		CreatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error)
@@ -250,6 +251,94 @@ func (us *UserService) GetDetailUser(ctx context.Context) (dto.AllUserResponse, 
 			Name: user.Role.Name,
 		},
 	}, nil
+}
+func (us *UserService) UpdateUser(ctx context.Context, req dto.UpdateUserRequest) (dto.AllUserResponse, error) {
+	token := ctx.Value("Authorization").(string)
+	userID, err := us.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		return dto.AllUserResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	user, flag, err := us.userRepo.GetUserByID(ctx, nil, userID)
+	if err != nil || !flag {
+		return dto.AllUserResponse{}, dto.ErrUserNotFound
+	}
+
+	if req.PositionID != nil {
+		position, flag, err := us.userRepo.GetPositionByID(ctx, nil, req.PositionID.String())
+		if err != nil || !flag {
+			return dto.AllUserResponse{}, dto.ErrPositionNotFound
+		}
+
+		user.Position = position
+	}
+
+	if req.RoleID != nil {
+		role, flag, err := us.userRepo.GetRoleByID(ctx, nil, req.RoleID.String())
+		if err != nil || !flag {
+			return dto.AllUserResponse{}, dto.ErrGetRoleFromID
+		}
+
+		user.Role = role
+	}
+
+	if req.Name != "" {
+		if len(req.Name) < 5 {
+			return dto.AllUserResponse{}, dto.ErrNameToShort
+		}
+
+		user.Name = req.Name
+	}
+
+	if req.Email != "" {
+		if !helpers.IsValidEmail(req.Email) {
+			return dto.AllUserResponse{}, dto.ErrInvalidEmail
+		}
+
+		_, flag, err := us.userRepo.GetUserByEmail(ctx, nil, req.Email)
+		if flag || err == nil {
+			return dto.AllUserResponse{}, dto.ErrEmailAlreadyExists
+		}
+
+		user.Email = req.Email
+	}
+
+	if req.Photo != "" {
+		user.Photo = req.Photo
+	}
+
+	if req.PhoneNumber != "" {
+		phoneNumberFormatted, err := helpers.StandardizePhoneNumber(req.PhoneNumber)
+		if err != nil {
+			return dto.AllUserResponse{}, dto.ErrFormatPhoneNumber
+		}
+
+		user.PhoneNumber = phoneNumberFormatted
+	}
+
+	err = us.userRepo.UpdateUser(ctx, nil, user)
+	if err != nil {
+		return dto.AllUserResponse{}, dto.ErrUpdateUser
+	}
+
+	res := dto.AllUserResponse{
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		Password:    user.Password,
+		PhoneNumber: user.PhoneNumber,
+		IsVerified:  user.IsVerified,
+		Position: dto.PositionResponse{
+			ID:   user.PositionID,
+			Name: user.Position.Name,
+		},
+		Role: dto.RoleResponse{
+			ID:   user.RoleID,
+			Name: user.Role.Name,
+		},
+	}
+
+	return res, nil
 }
 
 // Permit

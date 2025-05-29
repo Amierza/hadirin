@@ -21,6 +21,7 @@ type (
 
 		// User
 		GetDetailUser(ctx *gin.Context)
+		UpdateUser(ctx *gin.Context)
 
 		// Permit
 		CreatePermit(ctx *gin.Context)
@@ -125,6 +126,24 @@ func (uh *UserHandler) GetDetailUser(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_DETAIL_USER, result)
+	ctx.JSON(http.StatusOK, res)
+}
+func (uh *UserHandler) UpdateUser(ctx *gin.Context) {
+	var payload dto.UpdateUserRequest
+	if err := ctx.ShouldBind(&payload); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := uh.userService.UpdateUser(ctx, payload)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_UPDATE_USER, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_UPDATE_USER, result)
 	ctx.JSON(http.StatusOK, res)
 }
 
