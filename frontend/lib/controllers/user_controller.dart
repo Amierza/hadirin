@@ -30,4 +30,21 @@ class UserController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  void updateUser(UserRequest request) async {
+    try {
+      isLoading.value = true;
+
+      final jsonData = request.toJson();
+      final response = await UserService.updateUser(jsonData);
+
+      if (response is UserResponse) {
+        Get.snackbar("Update profil berhasil", "Profil berhasil diperbarui");
+      } else {
+        Get.snackbar("Update profil gagal", "Gagal melakukan update profil");
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/controllers/user_controller.dart';
+import 'package:frontend/models/user_model.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/widgets/navbar.dart';
 import 'package:get/state_manager.dart';
@@ -14,7 +15,6 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  bool _isPasswordVisible = false;
 
   String? validateNama(String? value) {
     if (value == null || value.isEmpty) {
@@ -200,7 +200,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          Navigator.pop(context);
+                          final updateProfile = UserRequest(
+                            name: controller.nameController.text,
+                            email: controller.emailController.text,
+                            phoneNumber: controller.phoneNumberController.text,
+                          );
+
+                          controller.updateUser(updateProfile);
                         }
                       },
                       child: Text(
