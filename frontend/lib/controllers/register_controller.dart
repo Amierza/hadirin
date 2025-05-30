@@ -68,7 +68,7 @@ class RegisterController extends GetxController {
         email,
         password,
         phone,
-        position.id,
+        position.positionId,
       );
 
       if (result.statusCode == 200) {
@@ -106,8 +106,8 @@ class RegisterController extends GetxController {
                       Navigator.pushNamed(context, '/login');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green, 
-                      foregroundColor: Colors.white, 
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

@@ -122,7 +122,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   items: controller.positions.map((position) {
                     return DropdownMenuItem(
                       value: position,
-                      child: Text(position.name),
+                      child: Text(position.positionName),
                     );
                   }).toList(),
                   onChanged: (newValue) {

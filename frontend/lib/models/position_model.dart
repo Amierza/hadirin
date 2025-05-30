@@ -1,13 +1,17 @@
 class Position {
-  final String id;
-  final String name;
+  final String positionId;
+  final String positionName;
 
-  Position({required this.id, required this.name});
+  Position({required this.positionId, required this.positionName});
 
   factory Position.fromJson(Map<String, dynamic> json) {
     return Position(
-      id: json['position_id'],
-      name: json['position_name'],
+      positionId: json['position_id'],
+      positionName: json['position_name'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'position_id': positionId, 'position_name': positionName};
   }
 }
