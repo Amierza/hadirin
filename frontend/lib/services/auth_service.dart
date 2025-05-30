@@ -32,10 +32,8 @@ class AuthService {
   static Future<dynamic> login(LoginRequest request) async {
     final response = await http.post(
       Uri.parse("$baseUrl/user/login"),
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: jsonEncode(request.toJson())
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(request.toJson()),
     );
 
     final responseBody = jsonDecode(response.body);
