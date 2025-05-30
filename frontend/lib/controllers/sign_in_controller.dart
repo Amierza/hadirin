@@ -3,14 +3,14 @@ import 'package:frontend/models/auth_model.dart';
 import 'package:frontend/models/error_model.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:get/get.dart';
-
+import 'package:get_storage/get_storage.dart';
 import '../widgets/dialog_status.dart';
 
 class SignInController extends GetxController {
   final isLoading = false.obs;
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final box = GetStorage();
 
   Future<void> loginUser() async {
     isLoading.value = true;
@@ -24,6 +24,8 @@ class SignInController extends GetxController {
       final response = await AuthService.login(request);
 
       if (response is LoginResponse) {
+        final token = response.data.accesToken;
+        box.write("token", token);
         Get.dialog(
           StatusDialog(
             isSuccess: true,
