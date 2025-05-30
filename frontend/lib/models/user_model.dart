@@ -53,6 +53,38 @@ class User {
   }
 }
 
+class UserRequest {
+  final String name;
+  final String email;
+  final String? password;
+  final String phoneNumber;
+  final String? photo;
+  final Role? roleId;
+  final Position? positionId;
+
+  UserRequest({
+    required this.name,
+    required this.email,
+    this.password,
+    required this.phoneNumber,
+    this.photo,
+    this.roleId,
+    this.positionId,
+  });
+
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{};
+    data['name'] = name;
+    data['email'] = email;
+    data['password'] = password;
+    data['phone_number'] = phoneNumber;
+    if (photo != null) data['photo'] = photo;
+    if (roleId != null) data['role_id'] = roleId;
+    if (positionId != null) data['position_id'] = positionId;
+    return data;
+  }
+}
+
 
 class UserResponse {
   final bool status;

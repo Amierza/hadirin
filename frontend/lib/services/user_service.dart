@@ -19,11 +19,31 @@ class UserService {
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",
-      }
+      },
     );
 
     final responseBody = jsonDecode(response.body);
-        if (responseBody['status'] == true) {
+    if (responseBody['status'] == true) {
+      return UserResponse.fromJson(responseBody);
+    } else {
+      return ErrorResponse.fromJson(responseBody);
+    }
+  }
+
+  static Future<dynamic> updateUser(Map<String, dynamic> data) async {
+    final token = box.read("token");
+
+    final response = await http.patch(
+      Uri.parse("$baseUrl/user/update-user"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode(data),
+    );
+
+    final responseBody = jsonDecode(response.body);
+    if (response.statusCode == 200) {
       return UserResponse.fromJson(responseBody);
     } else {
       return ErrorResponse.fromJson(responseBody);
