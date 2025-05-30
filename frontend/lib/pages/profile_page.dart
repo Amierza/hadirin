@@ -29,96 +29,108 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Ahmad Mirza Rafiq Azmi',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: medium,
-                        color: primaryTextColor,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ahmad Mirza Rafiq Azmi',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: medium,
+                          color: primaryTextColor,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '187231059',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: primaryTextColor,
+                      Text(
+                        '187231059',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: primaryTextColor,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        iconColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        Get.toNamed('/edit_profile');
-                      },
-                      child: Row(
-                        children: [
-                          Icon(Icons.repeat, size: 18),
-                          Text(
-                            'Edit Profile',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              color: Colors.white,
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          iconColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          Get.toNamed('/edit_profile');
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.edit, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Edit Profile',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 30),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: Colors.white,
-              ),
-              width: double.infinity,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
+            GestureDetector(
+              onTap: () {
+                Get.toNamed('/presence_history');
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
                 ),
-                child: Text(
-                  'Riwayat Absensi',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: medium,
-                    color: primaryTextColor,
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  child: Text(
+                    'Riwayat Absensi',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: medium,
+                      color: primaryTextColor,
+                    ),
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: dangerColor,
-                foregroundColor: Colors.white,
-                iconColor: Colors.white,
-              ),
-              onPressed: () {},
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Log Out',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: regular,
-                        color: Colors.white,
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: dangerColor,
+                  foregroundColor: Colors.white,
+                  iconColor: Colors.white,
+                ),
+                onPressed: () {},
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Log Out',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: regular,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    Icon(Icons.output_rounded, size: 24),
-                  ],
+                      Icon(Icons.output_rounded, size: 24),
+                    ],
+                  ),
                 ),
               ),
             ),

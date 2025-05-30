@@ -61,6 +61,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/profile', page: () => ProfilePage()),
         GetPage(name: '/presence_history', page: () => PresenceHistoryPage()),
         GetPage(name: '/edit_profile', page: () => EditProfilePage())
+
       ],
     );
   }
