@@ -408,37 +408,45 @@ func (us *UserService) GetAllPermit(ctx context.Context, req dto.PermitMonthRequ
 		return dto.PermitsResponse{}, dto.ErrGetUserIDFromToken
 	}
 
+	userEntity, flag, err := us.userRepo.GetUserByID(ctx, nil, userID)
+	if err != nil || !flag {
+		return dto.PermitsResponse{}, dto.ErrUserNotFound
+	}
+
 	data, err := us.userRepo.GetAllPermit(ctx, nil, userID, req)
 	if err != nil {
 		return dto.PermitsResponse{}, dto.ErrGetAllPermit
 	}
 
+	user := dto.AllUserResponse{
+		ID:          userEntity.ID,
+		Name:        userEntity.Name,
+		Email:       userEntity.Email,
+		Password:    userEntity.Password,
+		PhoneNumber: userEntity.PhoneNumber,
+		Photo:       userEntity.Photo,
+		IsVerified:  userEntity.IsVerified,
+		Position: dto.PositionResponse{
+			ID:   &userEntity.Position.ID,
+			Name: userEntity.Position.Name,
+		},
+		Role: dto.RoleResponse{
+			ID:   &userEntity.ID,
+			Name: userEntity.Name,
+		},
+	}
+
 	var permits []dto.PermitResponse
 	for _, permit := range data.Permits {
-		permits = append(permits, dto.PermitResponse{
+		data := dto.PermitResponse{
 			ID:     permit.ID,
 			Date:   permit.Date,
 			Status: permit.Status,
 			Title:  permit.Title,
 			Desc:   permit.Desc,
-		})
-	}
+		}
 
-	user := dto.AllUserResponse{
-		ID:          data.Permits[0].User.ID,
-		Name:        data.Permits[0].User.Name,
-		Email:       data.Permits[0].User.Email,
-		Password:    data.Permits[0].User.Password,
-		PhoneNumber: data.Permits[0].User.PhoneNumber,
-		IsVerified:  data.Permits[0].User.IsVerified,
-		Position: dto.PositionResponse{
-			ID:   data.Permits[0].User.PositionID,
-			Name: data.Permits[0].User.Position.Name,
-		},
-		Role: dto.RoleResponse{
-			ID:   data.Permits[0].User.RoleID,
-			Name: data.Permits[0].User.Role.Name,
-		},
+		permits = append(permits, data)
 	}
 
 	return dto.PermitsResponse{

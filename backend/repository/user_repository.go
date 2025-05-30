@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	"github.com/Amierza/hadirin/backend/dto"
 	"github.com/Amierza/hadirin/backend/entity"
@@ -158,7 +160,9 @@ func (ur *UserRepository) GetAllPermit(ctx context.Context, tx *gorm.DB, userID 
 			"07": true, "08": true, "09": true, "10": true, "11": true, "12": true,
 		}
 		if validMonths[req.Month] {
-			query = query.Where("EXTRACT(MONTH FROM created_at) = ?", req.Month)
+			monthInt, _ := strconv.Atoi(req.Month)
+			fmt.Println("Month:", monthInt)
+			query = query.Where("EXTRACT(MONTH FROM date) = ?", monthInt)
 		}
 	}
 
