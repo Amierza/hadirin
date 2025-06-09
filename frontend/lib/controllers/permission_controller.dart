@@ -3,7 +3,7 @@ import 'package:frontend/models/permission_model.dart';
 import 'package:frontend/services/permission_service.dart';
 
 class PermissionController extends GetxController {
-  var selectedMonth = 'Februari'.obs;
+  var selectedMonth = 'Januari'.obs;
   var isLoading = false.obs;
   var isError = false.obs;
   var errorMessage = ''.obs;

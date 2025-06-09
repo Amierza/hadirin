@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/permission_model.dart';
+import 'package:frontend/pages/make_permission_page.dart';
 import 'package:frontend/services/permission_service.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/widgets/navbar.dart';
+import 'package:frontend/pages/permission_detail_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PermissionPage extends StatefulWidget {
@@ -74,6 +76,29 @@ class _PermissionPageState extends State<PermissionPage> {
     await _loadPermits();
   }
 
+  void _navigateToDetail(PermitItem permit) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PermissionDetailPage(permit: permit),
+      ),
+    );
+  }
+
+  void _navigateToCreatePermission() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreatePermissionPage(),
+      ),
+    );
+
+    // Refresh data jika ada permit baru yang dibuat
+    if (result == true) {
+      _refreshPermits();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,6 +122,15 @@ class _PermissionPageState extends State<PermissionPage> {
               ),
             ],
           ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToCreatePermission,
+        backgroundColor: primaryColor,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 28,
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
@@ -181,7 +215,10 @@ class _PermissionPageState extends State<PermissionPage> {
       itemCount: _permits.length,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
-        return PermissionCard(permission: _permits[index]);
+        return PermissionCard(
+          permission: _permits[index],
+          onTap: () => _navigateToDetail(_permits[index]),
+        );
       },
     );
   }
@@ -231,86 +268,82 @@ class _PermissionPageState extends State<PermissionPage> {
 
 class PermissionCard extends StatelessWidget {
   final PermitItem permission;
+  final VoidCallback? onTap;
 
-  const PermissionCard({Key? key, required this.permission}) : super(key: key);
+  const PermissionCard({
+    Key? key, 
+    required this.permission,
+    this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: primaryTextColor.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            permission.formattedDate,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: primaryTextColor.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
-          const SizedBox(height: 12),
-          _TitleLabel(
-            text: permission.title,
-            color: permission.titleColor,
-          ),
-          const SizedBox(height: 8),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final textSpan = TextSpan(
-                text: permission.description,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black87,
-                  height: 1.4,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  permission.formattedDate,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
                 ),
-              );
-              
-              final textPainter = TextPainter(
-                text: textSpan,
-                maxLines: 3,
-                textDirection: TextDirection.ltr,
-              )..layout(maxWidth: constraints.maxWidth - 100); // Account for status width
-              
-              if (textPainter.didExceedMaxLines) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      permission.description,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black87,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: _StatusLabel(status: permission.status),
-                    ),
-                  ],
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Colors.grey[400],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _TitleLabel(
+              text: permission.title,
+              color: permission.titleColor,
+            ),
+            const SizedBox(height: 8),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final textSpan = TextSpan(
+                  text: permission.description,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black87,
+                    height: 1.4,
+                  ),
                 );
-              } else {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Text(
+                
+                final textPainter = TextPainter(
+                  text: textSpan,
+                  maxLines: 3,
+                  textDirection: TextDirection.ltr,
+                )..layout(maxWidth: constraints.maxWidth - 100);
+                
+                if (textPainter.didExceedMaxLines) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
                         permission.description,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
@@ -318,16 +351,40 @@ class PermissionCard extends StatelessWidget {
                           color: Colors.black87,
                           height: 1.4,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    _StatusLabel(status: permission.status),
-                  ],
-                );
-              }
-            },
-          ),
-        ],
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _StatusLabel(status: permission.status),
+                      ),
+                    ],
+                  );
+                } else {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          permission.description,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black87,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _StatusLabel(status: permission.status),
+                    ],
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -372,7 +429,7 @@ class _StatusLabel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: status.color.withOpacity(0.1),
+        color: status.color.withOpacity(0.2),
         border: Border.all(color: status.color),
         borderRadius: BorderRadius.circular(4),
       ),
