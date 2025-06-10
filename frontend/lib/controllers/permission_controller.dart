@@ -24,12 +24,28 @@ class PermissionController extends GetxController {
     try {
       isLoading.value = true;
       isError.value = false;
-      permits.value = await PermitService.fetchPermitsByMonth(selectedMonth.value);
+      permits.value = await PermitService.fetchPermitsByMonth(
+        selectedMonth.value,
+      );
     } catch (e) {
       isError.value = true;
       errorMessage.value = e.toString();
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // Di controller
+  Future<void> deletePermit(String permitId, String month) async {
+    final result = await PermitService.deletePermission(permitId);
+
+    if (result['success']) {
+      // ✅ Ambil ulang data
+      final updatedPermits = await PermitService.fetchPermitsByMonth(month);
+      permits.assignAll(updatedPermits); // <- ini penting
+      update(); // atau refresh UI secara eksplisit jika pakai Obx
+    } else {
+      // tampilkan error
     }
   }
 }
