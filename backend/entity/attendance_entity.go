@@ -8,6 +8,7 @@ import (
 
 type Attendance struct {
 	ID           uuid.UUID  `gorm:"type:uuid;primaryKey" json:"att_id"`
+	Status       *bool      `json:"att_status"`
 	DateIn       *time.Time `json:"att_date_in"`
 	DateOut      *time.Time `json:"att_date_out"`
 	PhotoIn      string     `json:"att_photo_in"`

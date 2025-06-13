@@ -23,8 +23,9 @@ type (
 		GetDetailUser(ctx *gin.Context)
 		UpdateUser(ctx *gin.Context)
 
-		// Presence
+		// Attendance
 		CreateAttendace(ctx *gin.Context)
+		UpdateAttendaceOut(ctx *gin.Context)
 
 		// Permit
 		CreatePermit(ctx *gin.Context)
@@ -150,11 +151,11 @@ func (uh *UserHandler) UpdateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Preseence
+// Attendance
 func (uh *UserHandler) CreateAttendace(ctx *gin.Context) {
 	latitude := ctx.PostForm("att_latitude_in")
 	longitude := ctx.PostForm("att_longitude_in")
-	dateInStr := ctx.PostForm("att_date_in")
+	dateStr := ctx.PostForm("att_date_in")
 
 	fileHeader, err := ctx.FormFile("att_photo_in")
 	if err != nil {
@@ -172,7 +173,7 @@ func (uh *UserHandler) CreateAttendace(ctx *gin.Context) {
 	defer file.Close()
 
 	payload := dto.CreateAttendanceInRequest{
-		DateIn:      dateInStr,
+		DateIn:      dateStr,
 		LatitudeIn:  latitude,
 		LongitudeIn: longitude,
 		FileHeader:  fileHeader,
@@ -193,6 +194,53 @@ func (uh *UserHandler) CreateAttendace(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_CREATE_ATTENDANCE, result)
+	ctx.JSON(http.StatusOK, res)
+}
+func (uh *UserHandler) UpdateAttendaceOut(ctx *gin.Context) {
+	attID := ctx.Param("id")
+
+	latitude := ctx.PostForm("att_latitude_out")
+	longitude := ctx.PostForm("att_longitude_out")
+	dateStr := ctx.PostForm("att_date_out")
+
+	fileHeader, err := ctx.FormFile("att_photo_out")
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_READ_PHOTO, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_OPEN_PHOTO, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, res)
+		return
+	}
+	defer file.Close()
+
+	payload := dto.UpdateAttendanceOutRequest{
+		ID:           attID,
+		DateOut:      dateStr,
+		LatitudeOut:  latitude,
+		LongitudeOut: longitude,
+		FileHeader:   fileHeader,
+		FileReader:   file,
+	}
+
+	if err := ctx.ShouldBind(&payload); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := uh.userService.UpdateAttendanceOut(ctx, payload)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_UPDATE_ATTENDANCE_OUT, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_UPDATE_ATTENDANCE_OUT, result)
 	ctx.JSON(http.StatusOK, res)
 }
 

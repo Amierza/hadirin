@@ -6,9 +6,11 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Amierza/hadirin/backend/constants"
 	"github.com/Amierza/hadirin/backend/dto"
 	"github.com/Amierza/hadirin/backend/entity"
 	"github.com/Amierza/hadirin/backend/helpers"
@@ -32,6 +34,7 @@ type (
 
 		// Attendance
 		CreateAttendance(ctx context.Context, req dto.CreateAttendanceInRequest) (dto.AttendanceInResponse, error)
+		UpdateAttendanceOut(ctx context.Context, req dto.UpdateAttendanceOutRequest) (dto.AttendanceOutResponse, error)
 
 		// Permit
 		CreatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error)
@@ -363,7 +366,7 @@ func (us *UserService) CreateAttendance(ctx context.Context, req dto.CreateAtten
 		return dto.AttendanceInResponse{}, dto.ErrUserNotFound
 	}
 
-	if req.LatitudeIn == "" || req.LongitudeIn == "" || req.FileHeader == nil {
+	if req.DateIn == "" || req.LatitudeIn == "" || req.LongitudeIn == "" || req.FileHeader == nil {
 		return dto.AttendanceInResponse{}, dto.ErrFieldIsEmpty
 	}
 
@@ -372,14 +375,28 @@ func (us *UserService) CreateAttendance(ctx context.Context, req dto.CreateAtten
 		return dto.AttendanceInResponse{}, dto.ErrFormatDate
 	}
 
+	limitTime := time.Date(
+		formatDate.Year(), formatDate.Month(), formatDate.Day(),
+		7, 0, 0, 0, formatDate.Location(),
+	)
+
+	var status bool
+	if formatDate.After(limitTime) {
+		status = false
+	} else {
+		status = true
+	}
+	req.Status = &status
+
 	ext := strings.TrimPrefix(filepath.Ext(req.FileHeader.Filename), ".")
+	ext = strings.ToLower(ext)
 	if ext != "jpg" && ext != "jpeg" && ext != "png" {
 		return dto.AttendanceInResponse{}, dto.ErrInvalidExtensionPhoto
 	}
 
 	fileName := fmt.Sprintf("%s_%s.%s",
 		strings.ReplaceAll(strings.ToLower(user.Name), " ", "_"),
-		time.Now().Format("20060102_150405"),
+		formatDate.Format("20060102_150405"),
 		ext,
 	)
 
@@ -396,8 +413,20 @@ func (us *UserService) CreateAttendance(ctx context.Context, req dto.CreateAtten
 		return dto.AttendanceInResponse{}, dto.ErrSaveFile
 	}
 
+	latIn, err1 := strconv.ParseFloat(req.LatitudeIn, 64)
+	lonIn, err2 := strconv.ParseFloat(req.LongitudeIn, 64)
+	if err1 != nil || err2 != nil {
+		return dto.AttendanceInResponse{}, dto.ErrInvalidCoordinate
+	}
+
+	distance := helpers.CalculateDistance(constants.OFFICE_LATITUDE, constants.OFFICE_LONGITUDE, latIn, lonIn)
+	if distance > constants.ALLOWED_RADIUS {
+		return dto.AttendanceInResponse{}, dto.ErrOutOfOfficeRadius
+	}
+
 	attendance := entity.Attendance{
 		ID:          uuid.New(),
+		Status:      req.Status,
 		DateIn:      &formatDate,
 		PhotoIn:     fileName,
 		LatitudeIn:  req.LatitudeIn,
@@ -411,10 +440,94 @@ func (us *UserService) CreateAttendance(ctx context.Context, req dto.CreateAtten
 
 	return dto.AttendanceInResponse{
 		ID:          attendance.ID,
+		Status:      attendance.Status,
 		DateIn:      *attendance.DateIn,
 		PhotoIn:     attendance.PhotoIn,
 		LatitudeIn:  attendance.LatitudeIn,
 		LongitudeIn: attendance.LongitudeIn,
+	}, nil
+}
+func (us *UserService) UpdateAttendanceOut(ctx context.Context, req dto.UpdateAttendanceOutRequest) (dto.AttendanceOutResponse, error) {
+	token := ctx.Value("Authorization").(string)
+	userId, err := us.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	user, flag, err := us.userRepo.GetUserByID(ctx, nil, userId)
+	if err != nil || !flag {
+		return dto.AttendanceOutResponse{}, dto.ErrUserNotFound
+	}
+
+	if req.DateOut == "" || req.LatitudeOut == "" || req.LongitudeOut == "" || req.FileHeader == nil {
+		return dto.AttendanceOutResponse{}, dto.ErrFieldIsEmpty
+	}
+
+	attendance, flag, err := us.userRepo.GetAttendanceByID(ctx, nil, req.ID)
+	if err != nil || !flag {
+		return dto.AttendanceOutResponse{}, dto.ErrAttendanceNotFound
+	}
+
+	formatDate, err := helpers.FormatDate(req.DateOut)
+	if err != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrFormatDate
+	}
+	attendance.DateOut = &formatDate
+	attendance.LatitudeOut = req.LatitudeOut
+	attendance.LongitudeOut = req.LongitudeOut
+
+	ext := strings.TrimPrefix(filepath.Ext(req.FileHeader.Filename), ".")
+	ext = strings.ToLower(ext)
+	if ext != "jpg" && ext != "jpeg" && ext != "png" {
+		return dto.AttendanceOutResponse{}, dto.ErrInvalidExtensionPhoto
+	}
+
+	fileName := fmt.Sprintf("%s_%s.%s",
+		strings.ReplaceAll(strings.ToLower(user.Name), " ", "_"),
+		formatDate.Format("20060102_150405"),
+		ext,
+	)
+	attendance.PhotoOut = fileName
+
+	_ = os.MkdirAll("assets", os.ModePerm)
+	savePath := fmt.Sprintf("assets/%s", fileName)
+
+	out, err := os.Create(savePath)
+	if err != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrCreateFile
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, req.FileReader); err != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrSaveFile
+	}
+
+	latOut, err1 := strconv.ParseFloat(req.LatitudeOut, 64)
+	lonOut, err2 := strconv.ParseFloat(req.LongitudeOut, 64)
+	if err1 != nil || err2 != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrInvalidCoordinate
+	}
+
+	distance := helpers.CalculateDistance(constants.OFFICE_LATITUDE, constants.OFFICE_LONGITUDE, latOut, lonOut)
+	if distance > constants.ALLOWED_RADIUS {
+		return dto.AttendanceOutResponse{}, dto.ErrOutOfOfficeRadius
+	}
+
+	if err := us.userRepo.UpdateAttendanceOut(ctx, nil, attendance); err != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrUpdateAttendance
+	}
+
+	return dto.AttendanceOutResponse{
+		ID:           attendance.ID,
+		Status:       attendance.Status,
+		DateIn:       *attendance.DateIn,
+		DateOut:      *attendance.DateOut,
+		PhotoIn:      attendance.PhotoIn,
+		PhotoOut:     attendance.PhotoOut,
+		LatitudeIn:   attendance.LatitudeIn,
+		LongitudeIn:  attendance.LongitudeIn,
+		LatitudeOut:  attendance.LatitudeOut,
+		LongitudeOut: attendance.LongitudeOut,
 	}, nil
 }
 
