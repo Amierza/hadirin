@@ -12,6 +12,7 @@ import (
 const (
 	// ====================================== Failed ======================================
 	MESSAGE_FAILED_GET_DATA_FROM_BODY = "gagal mendapatkan data dari body"
+	MESSAGE_FAILED_PARSE_STATUS       = "gagal parse status"
 	// File
 	MESSAGE_FAILED_READ_PHOTO = "gagal membaca foto"
 	MESSAGE_FAILED_OPEN_PHOTO = "gagal membuka foto"
@@ -33,7 +34,8 @@ const (
 	MESSAGE_FAILED_GET_DETAIL_USER = "gagal mendapatkan user detail"
 	MESSAGE_FAILED_UPDATE_USER     = "gagal perbarui user"
 	// Attendance
-	MESSAGE_FAILED_CREATE_ATTENDANCE = "gagal membuat presensi"
+	MESSAGE_FAILED_CREATE_ATTENDANCE     = "gagal membuat presensi"
+	MESSAGE_FAILED_UPDATE_ATTENDANCE_OUT = "gagal update presensi keluar"
 	// Permit
 	MESSAGE_FAILED_CREATE_PERMIT     = "gagal membuat perizinan"
 	MESSAGE_FAILED_GET_LIST_PERMIT   = "gagal mendapatkan list perizinan"
@@ -52,7 +54,8 @@ const (
 	MESSAGE_SUCCESS_GET_DETAIL_USER = "berhasil mendapatkan user detail"
 	MESSAGE_SUCCESS_UPDATE_USER     = "berhasil perbarui user"
 	// Attendance
-	MESSAGE_SUCCESS_CREATE_ATTENDANCE = "berhasil membuat presensi"
+	MESSAGE_SUCCESS_CREATE_ATTENDANCE     = "berhasil membuat presensi"
+	MESSAGE_SUCCESS_UPDATE_ATTENDANCE_OUT = "berhasil update presensi keluar"
 	// Permit
 	MESSAGE_SUCCESS_CREATE_PERMIT     = "berhasil membuat perizinan"
 	MESSAGE_SUCCESS_GET_LIST_PERMIT   = "berhasil mendapatkan list perizinan"
@@ -103,7 +106,11 @@ var (
 	ErrUserNotFound       = errors.New("gagal user tidak ditemukan")
 	ErrUpdateUser         = errors.New("gagal perbarui user")
 	// Attendance
-	ErrCreateAttendance = errors.New("gagal membuat presensi")
+	ErrCreateAttendance   = errors.New("gagal membuat presensi")
+	ErrAttendanceNotFound = errors.New("gagal presensi tidak ditemukan")
+	ErrUpdateAttendance   = errors.New("gagal update presensi keluar")
+	ErrInvalidCoordinate  = errors.New("gagal koordinat tidak valid")
+	ErrOutOfOfficeRadius  = errors.New("gagal lokasi berada di luar radius kantor")
 	// Permit
 	ErrCreatePermit   = errors.New("gagal membuat perizinan")
 	ErrFormatDate     = errors.New("gagal memformat tanggal")
@@ -174,6 +181,7 @@ type (
 	// Attendance
 	CreateAttendanceInRequest struct {
 		ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"att_id"`
+		Status      *bool     `json:"att_status"`
 		DateIn      string    `json:"att_date_in"`
 		PhotoIn     string    `json:"att_photo_in"`
 		LatitudeIn  string    `json:"att_latitude_in"`
@@ -183,10 +191,33 @@ type (
 	}
 	AttendanceInResponse struct {
 		ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"att_id"`
+		Status      *bool     `json:"att_status"`
 		DateIn      time.Time `json:"att_date_in"`
 		PhotoIn     string    `json:"att_photo_in"`
 		LatitudeIn  string    `json:"att_latitude_in"`
 		LongitudeIn string    `json:"att_longitude_in"`
+	}
+	UpdateAttendanceOutRequest struct {
+		ID           string `json:"-"`
+		Status       *bool  `json:"att_status"`
+		DateOut      string `json:"att_date_out"`
+		PhotoOut     string `json:"att_photo_out"`
+		LatitudeOut  string `json:"att_latitude_out"`
+		LongitudeOut string `json:"att_longitude_out"`
+		FileHeader   *multipart.FileHeader
+		FileReader   multipart.File
+	}
+	AttendanceOutResponse struct {
+		ID           uuid.UUID `gorm:"type:uuid;primaryKey" json:"att_id"`
+		Status       *bool     `json:"att_status"`
+		DateIn       time.Time `json:"att_date_in"`
+		DateOut      time.Time `json:"att_date_out"`
+		PhotoIn      string    `json:"att_photo_in"`
+		PhotoOut     string    `json:"att_photo_out"`
+		LatitudeIn   string    `json:"att_latitude_in"`
+		LongitudeIn  string    `json:"att_longitude_in"`
+		LatitudeOut  string    `json:"att_latitude_out"`
+		LongitudeOut string    `json:"att_longitude_out"`
 	}
 	// Permit
 	PermitResponse struct {

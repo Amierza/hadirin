@@ -23,6 +23,7 @@ type (
 		GetAllPosition(ctx context.Context, tx *gorm.DB) (dto.AllPositionRepositoryResponse, error)
 		GetAllPermit(ctx context.Context, tx *gorm.DB, userID string, req dto.PermitMonthRequest) (dto.AllPermitRepositoryResponse, error)
 		GetPermitByID(ctx context.Context, tx *gorm.DB, permitID string) (entity.Permit, bool, error)
+		GetAttendanceByID(ctx context.Context, tx *gorm.DB, attendanceID string) (entity.Attendance, bool, error)
 
 		// POST / Create
 		RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
@@ -32,6 +33,7 @@ type (
 		// PATCH / Update
 		UpdatePermit(ctx context.Context, tx *gorm.DB, permit entity.Permit) error
 		UpdateUser(ctx context.Context, tx *gorm.DB, user entity.User) error
+		UpdateAttendanceOut(ctx context.Context, tx *gorm.DB, attendance entity.Attendance) error
 
 		// DELETE / Delete
 		DeletePermit(ctx context.Context, tx *gorm.DB, permitID string) error
@@ -190,6 +192,21 @@ func (ur *UserRepository) GetPermitByID(ctx context.Context, tx *gorm.DB, permit
 
 	return permit, true, nil
 }
+func (ur *UserRepository) GetAttendanceByID(ctx context.Context, tx *gorm.DB, attendanceID string) (entity.Attendance, bool, error) {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	var attendance entity.Attendance
+	query := tx.WithContext(ctx).
+		Preload("User.Role").
+		Preload("User.Position")
+	if err := query.Where("id = ?", attendanceID).Take(&attendance).Error; err != nil {
+		return entity.Attendance{}, false, err
+	}
+
+	return attendance, true, nil
+}
 
 // POST / Create
 func (ur *UserRepository) RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error) {
@@ -234,6 +251,13 @@ func (ur *UserRepository) UpdateUser(ctx context.Context, tx *gorm.DB, user enti
 	}
 
 	return tx.WithContext(ctx).Where("id = ?", user.ID).Updates(&user).Error
+}
+func (ur *UserRepository) UpdateAttendanceOut(ctx context.Context, tx *gorm.DB, attendance entity.Attendance) error {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	return tx.WithContext(ctx).Where("id = ?", attendance.ID).Updates(&attendance).Error
 }
 
 // DELETE / Delete
