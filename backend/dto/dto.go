@@ -2,6 +2,7 @@ package dto
 
 import (
 	"errors"
+	"mime/multipart"
 	"time"
 
 	"github.com/Amierza/hadirin/backend/entity"
@@ -11,6 +12,9 @@ import (
 const (
 	// ====================================== Failed ======================================
 	MESSAGE_FAILED_GET_DATA_FROM_BODY = "gagal mendapatkan data dari body"
+	// File
+	MESSAGE_FAILED_READ_PHOTO = "gagal membaca foto"
+	MESSAGE_FAILED_OPEN_PHOTO = "gagal membuka foto"
 	// Middleware
 	MESSAGE_FAILED_PROSES_REQUEST             = "gagal memproses permintaan"
 	MESSAGE_FAILED_TOKEN_NOT_FOUND            = "gagal, token tidak ditemukan"
@@ -28,6 +32,8 @@ const (
 	// User
 	MESSAGE_FAILED_GET_DETAIL_USER = "gagal mendapatkan user detail"
 	MESSAGE_FAILED_UPDATE_USER     = "gagal perbarui user"
+	// Attendance
+	MESSAGE_FAILED_CREATE_ATTENDANCE = "gagal membuat presensi"
 	// Permit
 	MESSAGE_FAILED_CREATE_PERMIT     = "gagal membuat perizinan"
 	MESSAGE_FAILED_GET_LIST_PERMIT   = "gagal mendapatkan list perizinan"
@@ -45,6 +51,8 @@ const (
 	// User
 	MESSAGE_SUCCESS_GET_DETAIL_USER = "berhasil mendapatkan user detail"
 	MESSAGE_SUCCESS_UPDATE_USER     = "berhasil perbarui user"
+	// Attendance
+	MESSAGE_SUCCESS_CREATE_ATTENDANCE = "berhasil membuat presensi"
 	// Permit
 	MESSAGE_SUCCESS_CREATE_PERMIT     = "berhasil membuat perizinan"
 	MESSAGE_SUCCESS_GET_LIST_PERMIT   = "berhasil mendapatkan list perizinan"
@@ -62,6 +70,10 @@ var (
 	ErrFormatPhoneNumber = errors.New("gagal menstandarisasi input nomor telepon")
 	ErrTitleToShort      = errors.New("judul perizinan minimal 5 karakter")
 	ErrDescToShort       = errors.New("deskripsi perizinan minimal 15 karakter")
+	// File
+	ErrInvalidExtensionPhoto = errors.New("hanya jpg/png yang diperbolehkan")
+	ErrCreateFile            = errors.New("gagal membuat file")
+	ErrSaveFile              = errors.New("gagal menyimpan file")
 	// Password
 	ErrHashingPassword  = errors.New("gagal hashing password")
 	ErrPasswordNotMatch = errors.New("gagal password salah")
@@ -90,9 +102,11 @@ var (
 	ErrGetUserIDFromToken = errors.New("gagal mendapatkan user id dari token")
 	ErrUserNotFound       = errors.New("gagal user tidak ditemukan")
 	ErrUpdateUser         = errors.New("gagal perbarui user")
+	// Attendance
+	ErrCreateAttendance = errors.New("gagal membuat presensi")
 	// Permit
 	ErrCreatePermit   = errors.New("gagal membuat perizinan")
-	ErrFormatDate     = errors.New("gagal memformat date perizinan")
+	ErrFormatDate     = errors.New("gagal memformat tanggal")
 	ErrGetAllPermit   = errors.New("gagal mendapatkan semua perizinan")
 	ErrPermitNotFound = errors.New("gagal perizinan tidak ditemukan")
 )
@@ -156,6 +170,23 @@ type (
 	}
 	AllPositionRepositoryResponse struct {
 		Positions []entity.Position
+	}
+	// Attendance
+	CreateAttendanceInRequest struct {
+		ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"att_id"`
+		DateIn      string    `json:"att_date_in"`
+		PhotoIn     string    `json:"att_photo_in"`
+		LatitudeIn  string    `json:"att_latitude_in"`
+		LongitudeIn string    `json:"att_longitude_in"`
+		FileHeader  *multipart.FileHeader
+		FileReader  multipart.File
+	}
+	AttendanceInResponse struct {
+		ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"att_id"`
+		DateIn      time.Time `json:"att_date_in"`
+		PhotoIn     string    `json:"att_photo_in"`
+		LatitudeIn  string    `json:"att_latitude_in"`
+		LongitudeIn string    `json:"att_longitude_in"`
 	}
 	// Permit
 	PermitResponse struct {
