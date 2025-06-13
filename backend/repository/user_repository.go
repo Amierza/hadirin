@@ -27,6 +27,7 @@ type (
 		// POST / Create
 		RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
 		CreatePermit(ctx context.Context, tx *gorm.DB, permit entity.Permit) error
+		CreateAttendance(ctx context.Context, tx *gorm.DB, attendance entity.Attendance) error
 
 		// PATCH / Update
 		UpdatePermit(ctx context.Context, tx *gorm.DB, permit entity.Permit) error
@@ -210,6 +211,13 @@ func (ur *UserRepository) CreatePermit(ctx context.Context, tx *gorm.DB, permit 
 	}
 
 	return tx.WithContext(ctx).Create(&permit).Error
+}
+func (ur *UserRepository) CreateAttendance(ctx context.Context, tx *gorm.DB, attendance entity.Attendance) error {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	return tx.WithContext(ctx).Create(&attendance).Error
 }
 
 // PATCH / Update

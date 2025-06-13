@@ -2,6 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/Amierza/hadirin/backend/dto"
 	"github.com/Amierza/hadirin/backend/entity"
@@ -23,6 +29,9 @@ type (
 		// User
 		GetDetailUser(ctx context.Context) (dto.AllUserResponse, error)
 		UpdateUser(ctx context.Context, req dto.UpdateUserRequest) (dto.AllUserResponse, error)
+
+		// Attendance
+		CreateAttendance(ctx context.Context, req dto.CreateAttendanceInRequest) (dto.AttendanceInResponse, error)
 
 		// Permit
 		CreatePermit(ctx context.Context, req dto.PermitRequest) (dto.PermitResponse, error)
@@ -339,6 +348,74 @@ func (us *UserService) UpdateUser(ctx context.Context, req dto.UpdateUserRequest
 	}
 
 	return res, nil
+}
+
+// Attendance
+func (us *UserService) CreateAttendance(ctx context.Context, req dto.CreateAttendanceInRequest) (dto.AttendanceInResponse, error) {
+	token := ctx.Value("Authorization").(string)
+	userId, err := us.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		return dto.AttendanceInResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	user, flag, err := us.userRepo.GetUserByID(ctx, nil, userId)
+	if err != nil || !flag {
+		return dto.AttendanceInResponse{}, dto.ErrUserNotFound
+	}
+
+	if req.LatitudeIn == "" || req.LongitudeIn == "" || req.FileHeader == nil {
+		return dto.AttendanceInResponse{}, dto.ErrFieldIsEmpty
+	}
+
+	formatDate, err := helpers.FormatDate(req.DateIn)
+	if err != nil {
+		return dto.AttendanceInResponse{}, dto.ErrFormatDate
+	}
+
+	ext := strings.TrimPrefix(filepath.Ext(req.FileHeader.Filename), ".")
+	if ext != "jpg" && ext != "jpeg" && ext != "png" {
+		return dto.AttendanceInResponse{}, dto.ErrInvalidExtensionPhoto
+	}
+
+	fileName := fmt.Sprintf("%s_%s.%s",
+		strings.ReplaceAll(strings.ToLower(user.Name), " ", "_"),
+		time.Now().Format("20060102_150405"),
+		ext,
+	)
+
+	_ = os.MkdirAll("assets", os.ModePerm)
+	savePath := fmt.Sprintf("assets/%s", fileName)
+
+	out, err := os.Create(savePath)
+	if err != nil {
+		return dto.AttendanceInResponse{}, dto.ErrCreateFile
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, req.FileReader); err != nil {
+		return dto.AttendanceInResponse{}, dto.ErrSaveFile
+	}
+
+	attendance := entity.Attendance{
+		ID:          uuid.New(),
+		DateIn:      &formatDate,
+		PhotoIn:     fileName,
+		LatitudeIn:  req.LatitudeIn,
+		LongitudeIn: req.LongitudeIn,
+		UserID:      &user.ID,
+	}
+
+	if err := us.userRepo.CreateAttendance(ctx, nil, attendance); err != nil {
+		return dto.AttendanceInResponse{}, dto.ErrCreateAttendance
+	}
+
+	return dto.AttendanceInResponse{
+		ID:          attendance.ID,
+		DateIn:      *attendance.DateIn,
+		PhotoIn:     attendance.PhotoIn,
+		LatitudeIn:  attendance.LatitudeIn,
+		LongitudeIn: attendance.LongitudeIn,
+	}, nil
 }
 
 // Permit
