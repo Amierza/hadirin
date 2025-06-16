@@ -30,17 +30,30 @@ class AuthService {
   }
 
   static Future<dynamic> login(LoginRequest request) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/user/login"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(request.toJson()),
-    );
+    final url = Uri.parse("$baseUrl/user/login");
+    print('Login URL: $url');
+    print('Request Body: ${jsonEncode(request.toJson())}');
 
-    final responseBody = jsonDecode(response.body);
-    if (responseBody['status'] == true) {
-      return LoginResponse.fromJson(responseBody);
-    } else {
-      return ErrorResponse.fromJson(responseBody);
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(request.toJson()),
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseBody['status'] == true) {
+        return LoginResponse.fromJson(responseBody);
+      } else {
+        return ErrorResponse.fromJson(responseBody);
+      }
+    } catch (e) {
+      print("Login error: $e");
+      rethrow;
     }
   }
 }
