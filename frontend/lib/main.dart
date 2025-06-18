@@ -14,6 +14,8 @@ import 'package:frontend/pages/rename_password_page.dart';
 import 'package:frontend/pages/register_page.dart';
 import 'package:frontend/pages/home_page.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart'; // Added this import
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,16 +23,49 @@ Future<void> main() async {
   try {
     await dotenv.load(fileName: ".env.local");
   } catch (error) {
-    print("Gagal load env $error");
+    print("Failed to load env: $error");
   }
 
   try {
     await GetStorage.init();
+    // Clean up old attendance data on app start
+    await _cleanupOldAttendanceData();
   } catch (error) {
-    print("Gagal init GetStorage $error");
+    print("Failed to initialize GetStorage: $error");
   }
 
   runApp(await buildApp());
+}
+
+Future<void> _cleanupOldAttendanceData() async {
+  final box = GetStorage();
+  try {
+    final lastCheckIn = box.read('last_check_in_time');
+    if (lastCheckIn != null) {
+      final lastCheckInDate = DateTime.parse(lastCheckIn);
+      final today = DateTime.now();
+
+      // If last check-in wasn't today, clear all attendance data
+      if (!_isSameDay(lastCheckInDate, today)) {
+        box.remove('current_att_id');
+        box.remove('last_check_in_time');
+        box.remove('is_checked_in');
+        if (kDebugMode) {
+          print(
+            '🧹 Cleared stale attendance data from ${DateFormat.yMd().format(lastCheckInDate)}',
+          );
+        }
+      }
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('❌ Error cleaning attendance data: $e');
+    }
+  }
+}
+
+bool _isSameDay(DateTime a, DateTime b) {
+  return a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 Future<Widget> buildApp() async {
@@ -60,8 +95,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/perizinan', page: () => HomePage()),
         GetPage(name: '/profile', page: () => ProfilePage()),
         GetPage(name: '/presence_history', page: () => PresenceHistoryPage()),
-        GetPage(name: '/edit_profile', page: () => EditProfilePage())
-
+        GetPage(name: '/edit_profile', page: () => EditProfilePage()),
       ],
     );
   }
