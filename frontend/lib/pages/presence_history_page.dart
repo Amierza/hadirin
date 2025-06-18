@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/controllers/attendance_controller.dart';
+import 'package:frontend/models/attendance_model.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/widgets/navbar.dart';
+import 'package:intl/intl.dart';
 
 class PresenceHistoryPage extends StatefulWidget {
   const PresenceHistoryPage({Key? key}) : super(key: key);
@@ -11,7 +15,9 @@ class PresenceHistoryPage extends StatefulWidget {
 }
 
 class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
-  String selectedMonth = 'Februari';
+  String selectedMonth = 'Juni'; // Default to current month
+  final DateFormat dateFormat = DateFormat('dd MMM yyyy');
+  final DateFormat timeFormat = DateFormat('HH:mm');
 
   final List<String> months = [
     'Januari',
@@ -28,176 +34,112 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
     'Desember',
   ];
 
-  final List<AbsensiItem> absensiList = [
-    AbsensiItem(
-      date: '17',
-      day: 'Mon',
-      masuk: '18:35:40',
-      keluar: '18:35:40',
-    ),
-    AbsensiItem(
-      date: '17',
-      day: 'Mon',
-      masuk: '18:35:40',
-      keluar: '18:35:40',
-    ),
-    AbsensiItem(
-      date: '17',
-      day: 'Mon',
-      masuk: '18:35:40',
-      keluar: '18:35:40',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final attendanceController = Get.put(AttendanceController());
+
     return Scaffold(
       backgroundColor: secondaryBackgroundColor,
-      appBar: AppBar(title: Text('Riwayat Absesi')),
-      body: SafeArea(child: Column(
-        children: [
-          // Month Dropdown
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(color: tertiaryTextColor, spreadRadius: 1, blurRadius: 2),
+      appBar: AppBar(
+        title: Text(
+          'Riwayat Absensi',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Month Dropdown
+            Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: tertiaryTextColor.withOpacity(0.2),
+                    spreadRadius: 1,
+                    blurRadius: 2,
+                  ),
                 ],
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedMonth,
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() => selectedMonth = newValue);
-                  }
-                },
-                items: months.map((month) {
-                  return DropdownMenuItem(
-                    value: month,
-                    child: Text(
-                      month,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 20,
-                        fontWeight: extraBold,
-                        color: Colors.black,
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedMonth,
+                  isExpanded: true,
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Colors.black,
+                  ),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() => selectedMonth = newValue);
+                      attendanceController.filterByMonth(
+                          months.indexOf(newValue) + 1);
+                    }
+                  },
+                  items: months.map((month) {
+                    return DropdownMenuItem(
+                      value: month,
+                      child: Text(
+                        month,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-          // List Absensi
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: absensiList.length,
-              itemBuilder: (context, index) {
-                final absensi = absensiList[index];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 20),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: const Color(0xFF2CCE66), width: 3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      // Date Container
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFEFEF),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              absensi.date,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            Text(
-                              absensi.day,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 16,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      // Time Information
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Masuk",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  absensi.masuk,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 16,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  "Keluar",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  absensi.keluar,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 16,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+            // List Absensi
+            Expanded(
+              child: Obx(() {
+                if (attendanceController.isLoading.value) {
+                  return const Center(
+                      child: CircularProgressIndicator());
+                }
+                if (attendanceController.errorMessage.value.isNotEmpty) {
+                  return Center(
+                    child: Text(
+                      attendanceController.errorMessage.value,
+                      style: GoogleFonts.plusJakartaSans(),
+                    ),
+                  );
+                }
+                if (attendanceController.filteredList.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'Tidak ada data absensi untuk bulan ini',
+                      style: GoogleFonts.plusJakartaSans(),
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    await attendanceController.fetchAllAttendance();
+                  },
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    itemCount: attendanceController.filteredList.length,
+                    itemBuilder: (context, index) {
+                      final att = attendanceController.filteredList[index];
+                      return _buildAttendanceCard(att);
+                    },
                   ),
                 );
-              },
+              }),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         onItemTapped: (index) {},
@@ -205,18 +147,165 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
       ),
     );
   }
+
+  Widget _buildAttendanceCard(Attendance att) {
+    final dateTimeIn = att.attDateIn.toLocal();
+    final hasCheckedOut = att.attDateOut != null &&
+        att.attDateOut != "0001-01-01T00:00:00Z";
+    
+    final date = dateFormat.format(dateTimeIn);
+    final masuk = timeFormat.format(dateTimeIn);
+    final keluar = hasCheckedOut
+        ? timeFormat.format(att.attDateOut!)
+        : '-';
+
+    return AbsensiCard(
+      date: date,
+      day: getDayName(dateTimeIn.weekday),
+      masuk: masuk,
+      keluar: keluar,
+      hasCheckedOut: hasCheckedOut,
+      onTap: () {
+        // Add action when card is tapped if needed
+      },
+    );
+  }
+
+  String getDayName(int weekday) {
+    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    return days[weekday - 1];
+  }
 }
 
-class AbsensiItem {
+class AbsensiCard extends StatelessWidget {
   final String date;
   final String day;
   final String masuk;
   final String keluar;
+  final bool hasCheckedOut;
+  final VoidCallback? onTap;
 
-  const AbsensiItem({
+  const AbsensiCard({
+    super.key,
     required this.date,
     required this.day,
     required this.masuk,
     required this.keluar,
+    required this.hasCheckedOut,
+    this.onTap,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(
+            color: hasCheckedOut
+                ? const Color(0xFF2CCE66) // Green if checked out
+                : const Color(0xFFFFA000), // Orange if not checked out
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Date Box
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    date.split(' ')[0], // Day number only
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    day.substring(0, 3), // Short day name
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Time Info
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Masuk",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        masuk,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "Keluar",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        keluar,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          color: hasCheckedOut
+                              ? Colors.black54
+                              : const Color(0xFFFFA000), // Orange if not checked out
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:frontend/config/config.dart';
 import 'package:frontend/controllers/user_controller.dart';
 import 'package:frontend/shared/theme.dart';
