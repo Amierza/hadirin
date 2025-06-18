@@ -25,6 +25,16 @@
     "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
   },
   {
+    "permission_id": "132a4192-087b-45bf-8ab4-0091287c5caa",
+    "permission_endpoint": "/api/v1/user/get-all-attendance",
+    "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
+  },
+  {
+    "permission_id": "e13f52bd-1a91-4990-b57d-114b15027ebf",
+    "permission_endpoint": "/api/v1/user/get-attendance-today",
+    "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"
+  },
+  {
     "permission_id": "400b4038-de3a-4e18-a61e-ef243679fc56",
     "permission_endpoint": "/api/v1/user/get-all-permit",
     "role_id": "1d1bba3e-4f22-47d2-ae7d-741ae6b44b85"

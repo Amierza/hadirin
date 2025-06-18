@@ -27,6 +27,8 @@ type (
 		// Attendance
 		CreateAttendace(ctx *gin.Context)
 		UpdateAttendaceOut(ctx *gin.Context)
+		GetAllAttendance(ctx *gin.Context)
+		GetAttendanceToday(ctx *gin.Context)
 
 		// Permit
 		CreatePermit(ctx *gin.Context)
@@ -177,6 +179,35 @@ func (uh *UserHandler) UpdateUser(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_UPDATE_USER, result)
+	ctx.JSON(http.StatusOK, res)
+}
+func (uh *UserHandler) GetAllAttendance(ctx *gin.Context) {
+	result, err := uh.userService.GetAllAttendance(ctx)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_ALL_ATTENDANCE, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_ALL_ATTENDANCE, result)
+	ctx.JSON(http.StatusOK, res)
+}
+func (uh *UserHandler) GetAttendanceToday(ctx *gin.Context) {
+	var payload dto.AttendanceTodayRequest
+	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := uh.userService.GetAttendanceToday(ctx, payload)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_ATTENDANCE_TODAY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_ATTENDANCE_TODAY, result)
 	ctx.JSON(http.StatusOK, res)
 }
 
