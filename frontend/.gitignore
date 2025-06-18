@@ -9,6 +9,8 @@
 .buildlog/
 .history
 .svn/
+.env
+.env.local
 .swiftpm/
 migrate_working_dir/
 

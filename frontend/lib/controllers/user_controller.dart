@@ -1,13 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:frontend/models/user_model.dart';
 import 'package:frontend/services/user_service.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 class UserController extends GetxController {
   final user = Rxn<User>();
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneNumberController = TextEditingController();
+
+  File? selectedPhoto;
 
   final isLoading = false.obs;
 
@@ -31,15 +36,30 @@ class UserController extends GetxController {
     }
   }
 
-  void updateUser(UserRequest request) async {
-    try {
-      isLoading.value = true;
+  Future<void> pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      selectedPhoto = File(pickedFile.path);
+      update();
+    }
+  }
 
-      final jsonData = request.toJson();
-      final response = await UserService.updateUser(jsonData);
+  void updateUser() async {
+    isLoading.value = true;
+    try {
+      final response = await UserService.updateUser(
+        name: nameController.text,
+        email: emailController.text,
+        phoneNumber: phoneNumberController.text,
+        imageFile: selectedPhoto,
+      );
+      print(response);
 
       if (response is UserResponse) {
         Get.snackbar("Update profil berhasil", "Profil berhasil diperbarui");
+        fetchUserDetail();
       } else {
         Get.snackbar("Update profil gagal", "Gagal melakukan update profil");
       }

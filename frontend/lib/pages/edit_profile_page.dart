@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/controllers/user_controller.dart';
-import 'package:frontend/models/user_model.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/widgets/navbar.dart';
-import 'package:get/state_manager.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -15,6 +14,7 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
+  final UserController controller = Get.put(UserController());
 
   String? validateNama(String? value) {
     if (value == null || value.isEmpty) {
@@ -46,150 +46,188 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Fetch user data when the page initializes
+    controller.fetchUserDetail();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GetBuilder<UserController>(
-      init: UserController(),
-      builder: (controller) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Edit Profile',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        centerTitle: false,
+      ),
+      body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-        return Scaffold(
-          backgroundColor: const Color(0xFFF5F6FA),
-          appBar: AppBar(
-            backgroundColor: backgroundColor,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              'Edit Profile',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            centerTitle: false,
-          ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Stack(
+
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: () => controller.pickImage(),
+                    child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(15),
-                          child: Image.asset(
-                            'assets/muka_presensi.png',
-                            width: double.infinity,
-                            height: 150,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
                         Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.green,
+                            color: Colors.grey[200],
                           ),
-                          child: const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 30,
+                          child:
+                              controller.selectedPhoto != null
+                                  ? ClipOval(
+                                    child: Image.file(
+                                      controller.selectedPhoto!,
+                                      width: 120,
+                                      height: 120,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                  : controller.user.value?.userPhoto != null
+                                  ? ClipOval(
+                                    child: Image.network(
+                                      controller.user.value!.userPhoto,
+                                      width: 120,
+                                      height: 120,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(
+                                                Icons.person,
+                                                size: 60,
+                                              ),
+                                    ),
+                                  )
+                                  : const Icon(Icons.person, size: 60),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.green,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 30),
+                  ),
+                  const SizedBox(height: 30),
 
-                    TextFormField(
-                      validator: validateNama,
-                      controller: controller.nameController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: "Ahmad Mirza Rafiq Azmi",
-                        hintStyle: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: tertiaryTextColor,
-                        ),
+                  TextFormField(
+                    validator: validateNama,
+                    controller: controller.nameController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 15,
                       ),
-                      style: GoogleFonts.poppins(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: "Nama Lengkap",
+                      hintStyle: GoogleFonts.poppins(
                         fontSize: 16,
-                        color: Colors.black,
+                        color: tertiaryTextColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-                    TextFormField(
-                      validator: validateEmail,
-                      controller: controller.emailController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: "employee@gmail.com",
-                        hintStyle: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: tertiaryTextColor,
-                        ),
+                  TextFormField(
+                    validator: validateEmail,
+                    controller: controller.emailController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 15,
                       ),
-                      style: GoogleFonts.poppins(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: "Email",
+                      hintStyle: GoogleFonts.poppins(
                         fontSize: 16,
-                        color: Colors.black,
+                        color: tertiaryTextColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-                    TextFormField(
-                      validator: validatePhoneNumber,
-                      controller: controller.phoneNumberController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: "083923934839",
-                        hintStyle: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: tertiaryTextColor,
-                        ),
+                  TextFormField(
+                    validator: validatePhoneNumber,
+                    controller: controller.phoneNumberController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 15,
                       ),
-                      style: GoogleFonts.poppins(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: "Nomor Telepon",
+                      hintStyle: GoogleFonts.poppins(
                         fontSize: 16,
-                        color: Colors.black,
+                        color: tertiaryTextColor,
                       ),
                     ),
-                    const SizedBox(height: 30),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
 
-                    ElevatedButton(
+                  Obx(() {
+                    return ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: backgroundColor,
@@ -198,36 +236,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          final updateProfile = UserRequest(
-                            name: controller.nameController.text,
-                            email: controller.emailController.text,
-                            phoneNumber: controller.phoneNumberController.text,
-                          );
-
-                          controller.updateUser(updateProfile);
-                        }
-                      },
-                      child: Text(
-                        'Update',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                      onPressed:
+                          controller.isLoading.value
+                              ? null
+                              : () {
+                                if (_formKey.currentState!.validate()) {
+                                  controller.updateUser();
+                                }
+                              },
+                      child:
+                          controller.isLoading.value
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : Text(
+                                'Update',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                    );
+                  }),
+                ],
               ),
             ),
           ),
-          bottomNavigationBar: CustomBottomNavigationBar(
-            onItemTapped: (index) {},
-            currentIndex: 3,
-          ),
         );
-      },
+      }),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        onItemTapped: (index) {},
+        currentIndex: 3,
+      ),
     );
   }
 }
