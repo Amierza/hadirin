@@ -31,6 +31,8 @@ type (
 		// User
 		GetDetailUser(ctx context.Context) (dto.AllUserResponse, error)
 		UpdateUser(ctx context.Context, req dto.UpdateUserRequest) (dto.AllUserResponse, error)
+		GetAllAttendance(ctx context.Context) ([]dto.AttendanceOutResponse, error)
+		GetAttendanceToday(ctx context.Context, req dto.AttendanceTodayRequest) (dto.AttendanceOutResponse, error)
 
 		// Attendance
 		CreateAttendance(ctx context.Context, req dto.CreateAttendanceInRequest) (dto.AttendanceInResponse, error)
@@ -403,9 +405,10 @@ func (us *UserService) CreateAttendance(ctx context.Context, req dto.CreateAtten
 		return dto.AttendanceInResponse{}, dto.ErrFormatDate
 	}
 
+	loc, _ := time.LoadLocation("Asia/Jakarta")
 	limitTime := time.Date(
 		formatDate.Year(), formatDate.Month(), formatDate.Day(),
-		7, 0, 0, 0, formatDate.Location(),
+		7, 0, 0, 0, loc,
 	)
 
 	var status bool
@@ -560,6 +563,70 @@ func (us *UserService) UpdateAttendanceOut(ctx context.Context, req dto.UpdateAt
 		LatitudeOut:  attendance.LatitudeOut,
 		LongitudeOut: attendance.LongitudeOut,
 	}, nil
+}
+func (us *UserService) GetAllAttendance(ctx context.Context) ([]dto.AttendanceOutResponse, error) {
+	token := ctx.Value("Authorization").(string)
+
+	userID, err := us.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		return []dto.AttendanceOutResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	datas, err := us.userRepo.GetAllAttendance(ctx, nil, userID)
+	if err != nil {
+		return []dto.AttendanceOutResponse{}, dto.ErrGetAllAttendance
+	}
+
+	var attendances []dto.AttendanceOutResponse
+	for _, attendance := range datas {
+		attendances = append(attendances, dto.AttendanceOutResponse{
+			ID:           attendance.ID,
+			Status:       attendance.Status,
+			DateIn:       *attendance.DateIn,
+			DateOut:      *attendance.DateOut,
+			PhotoIn:      attendance.PhotoIn,
+			PhotoOut:     attendance.PhotoOut,
+			LatitudeIn:   attendance.LatitudeIn,
+			LongitudeIn:  attendance.LongitudeIn,
+			LatitudeOut:  attendance.LatitudeOut,
+			LongitudeOut: attendance.LongitudeOut,
+		})
+	}
+
+	return attendances, nil
+}
+func (us *UserService) GetAttendanceToday(ctx context.Context, req dto.AttendanceTodayRequest) (dto.AttendanceOutResponse, error) {
+	token := ctx.Value("Authorization").(string)
+
+	userID, err := us.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrGetUserIDFromToken
+	}
+
+	todayDate, err := helpers.ParseDateOnly(req.Date)
+	if err != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrFormatDate
+	}
+
+	att, err := us.userRepo.GetAttendanceToday(ctx, nil, userID, &todayDate)
+	if err != nil {
+		return dto.AttendanceOutResponse{}, dto.ErrGetAttendanceToday
+	}
+
+	attendance := dto.AttendanceOutResponse{
+		ID:           att.ID,
+		Status:       att.Status,
+		DateIn:       *att.DateIn,
+		DateOut:      *att.DateOut,
+		PhotoIn:      att.PhotoIn,
+		PhotoOut:     att.PhotoOut,
+		LatitudeIn:   att.LatitudeIn,
+		LongitudeIn:  att.LongitudeIn,
+		LatitudeOut:  att.LatitudeOut,
+		LongitudeOut: att.LongitudeOut,
+	}
+
+	return attendance, nil
 }
 
 // Permit

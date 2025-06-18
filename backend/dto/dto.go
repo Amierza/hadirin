@@ -36,6 +36,8 @@ const (
 	// Attendance
 	MESSAGE_FAILED_CREATE_ATTENDANCE     = "gagal membuat presensi"
 	MESSAGE_FAILED_UPDATE_ATTENDANCE_OUT = "gagal update presensi keluar"
+	MESSAGE_FAILED_GET_ALL_ATTENDANCE    = "gagal mendapatkan seluruh presensi"
+	MESSAGE_FAILED_GET_ATTENDANCE_TODAY  = "gagal mendapatkan presensi hari ini"
 	// Permit
 	MESSAGE_FAILED_CREATE_PERMIT     = "gagal membuat perizinan"
 	MESSAGE_FAILED_GET_LIST_PERMIT   = "gagal mendapatkan list perizinan"
@@ -56,6 +58,8 @@ const (
 	// Attendance
 	MESSAGE_SUCCESS_CREATE_ATTENDANCE     = "berhasil membuat presensi"
 	MESSAGE_SUCCESS_UPDATE_ATTENDANCE_OUT = "berhasil update presensi keluar"
+	MESSAGE_SUCCESS_GET_ALL_ATTENDANCE    = "berhasil mendapatkan seluruh presensi"
+	MESSAGE_SUCCESS_GET_ATTENDANCE_TODAY  = "berhasil mendapatkan presensi hari ini"
 	// Permit
 	MESSAGE_SUCCESS_CREATE_PERMIT     = "berhasil membuat perizinan"
 	MESSAGE_SUCCESS_GET_LIST_PERMIT   = "berhasil mendapatkan list perizinan"
@@ -109,6 +113,8 @@ var (
 	ErrCreateAttendance   = errors.New("gagal membuat presensi")
 	ErrAttendanceNotFound = errors.New("gagal presensi tidak ditemukan")
 	ErrUpdateAttendance   = errors.New("gagal update presensi keluar")
+	ErrGetAllAttendance   = errors.New("gagal mendapatkan seluruh presensi")
+	ErrGetAttendanceToday = errors.New("gagal mendapatkan presensi hari ini")
 	ErrInvalidCoordinate  = errors.New("gagal koordinat tidak valid")
 	ErrOutOfOfficeRadius  = errors.New("gagal lokasi berada di luar radius kantor")
 	// Permit
@@ -220,6 +226,9 @@ type (
 		LongitudeIn  string    `json:"att_longitude_in"`
 		LatitudeOut  string    `json:"att_latitude_out"`
 		LongitudeOut string    `json:"att_longitude_out"`
+	}
+	AttendanceTodayRequest struct {
+		Date string `json:"date"`
 	}
 	// Permit
 	PermitResponse struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Amierza/hadirin/backend/dto"
 	"github.com/Amierza/hadirin/backend/entity"
@@ -24,6 +25,8 @@ type (
 		GetAllPermit(ctx context.Context, tx *gorm.DB, userID string, req dto.PermitMonthRequest) (dto.AllPermitRepositoryResponse, error)
 		GetPermitByID(ctx context.Context, tx *gorm.DB, permitID string) (entity.Permit, bool, error)
 		GetAttendanceByID(ctx context.Context, tx *gorm.DB, attendanceID string) (entity.Attendance, bool, error)
+		GetAllAttendance(ctx context.Context, tx *gorm.DB, userID string) ([]entity.Attendance, error)
+		GetAttendanceToday(ctx context.Context, tx *gorm.DB, userID string, date *time.Time) (entity.Attendance, error)
 
 		// POST / Create
 		RegisterUser(ctx context.Context, tx *gorm.DB, user entity.User) (entity.User, error)
@@ -206,6 +209,43 @@ func (ur *UserRepository) GetAttendanceByID(ctx context.Context, tx *gorm.DB, at
 	}
 
 	return attendance, true, nil
+}
+func (ur *UserRepository) GetAllAttendance(ctx context.Context, tx *gorm.DB, userID string) ([]entity.Attendance, error) {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	var attendances []entity.Attendance
+	var err error
+
+	query := tx.WithContext(ctx).Model(&entity.Attendance{}).
+		Preload("User.Position").
+		Preload("User.Role")
+
+	if err := query.Where("user_id = ?", userID).Order("created_at DESC").Find(&attendances).Error; err != nil {
+		return []entity.Attendance{}, err
+	}
+
+	return attendances, err
+}
+func (ur *UserRepository) GetAttendanceToday(ctx context.Context, tx *gorm.DB, userID string, date *time.Time) (entity.Attendance, error) {
+	if tx == nil {
+		tx = ur.db
+	}
+
+	var attendance entity.Attendance
+	err := tx.WithContext(ctx).
+		Preload("User.Position").
+		Preload("User.Role").
+		Where("user_id = ? AND DATE(date_in) = ?", userID, date.Format("2006-01-02")).
+		Order("created_at DESC").
+		First(&attendance).Error
+
+	if err != nil {
+		return entity.Attendance{}, err
+	}
+
+	return attendance, nil
 }
 
 // POST / Create

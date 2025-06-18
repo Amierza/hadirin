@@ -27,6 +27,8 @@ func User(route *gin.Engine, userHandler handler.IUserHandler, jwtService servic
 			// Attendance
 			routes.POST("/create-attendance", userHandler.CreateAttendace)
 			routes.PATCH("/update-attendance/:id", userHandler.UpdateAttendaceOut)
+			routes.GET("/get-all-attendance", userHandler.GetAllAttendance)
+			routes.GET("/get-attendance-today", userHandler.GetAttendanceToday)
 
 			// Permit
 			routes.POST("/create-permit", userHandler.CreatePermit)
