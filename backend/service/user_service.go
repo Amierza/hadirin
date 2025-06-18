@@ -328,6 +328,33 @@ func (us *UserService) UpdateUser(ctx context.Context, req dto.UpdateUserRequest
 		user.PhoneNumber = phoneNumberFormatted
 	}
 
+	if req.FileHeader != nil || req.FileReader != nil {
+		ext := strings.TrimPrefix(filepath.Ext(req.FileHeader.Filename), ".")
+		ext = strings.ToLower(ext)
+		if ext != "jpg" && ext != "jpeg" && ext != "png" {
+			return dto.AllUserResponse{}, dto.ErrInvalidExtensionPhoto
+		}
+
+		fileName := fmt.Sprintf("%s_warasin.%s",
+			strings.ReplaceAll(strings.ToLower(user.Name), " ", "_"),
+			ext,
+		)
+
+		_ = os.MkdirAll("assets/user", os.ModePerm)
+		savePath := fmt.Sprintf("assets/user/%s", fileName)
+
+		out, err := os.Create(savePath)
+		if err != nil {
+			return dto.AllUserResponse{}, dto.ErrCreateFile
+		}
+		defer out.Close()
+
+		if _, err := io.Copy(out, req.FileReader); err != nil {
+			return dto.AllUserResponse{}, dto.ErrSaveFile
+		}
+		user.Photo = fileName
+	}
+
 	err = us.userRepo.UpdateUser(ctx, nil, user)
 	if err != nil {
 		return dto.AllUserResponse{}, dto.ErrUpdateUser
@@ -339,6 +366,7 @@ func (us *UserService) UpdateUser(ctx context.Context, req dto.UpdateUserRequest
 		Email:       user.Email,
 		Password:    user.Password,
 		PhoneNumber: user.PhoneNumber,
+		Photo:       user.Photo,
 		IsVerified:  user.IsVerified,
 		Position: dto.PositionResponse{
 			ID:   user.PositionID,
@@ -388,29 +416,32 @@ func (us *UserService) CreateAttendance(ctx context.Context, req dto.CreateAtten
 	}
 	req.Status = &status
 
-	ext := strings.TrimPrefix(filepath.Ext(req.FileHeader.Filename), ".")
-	ext = strings.ToLower(ext)
-	if ext != "jpg" && ext != "jpeg" && ext != "png" {
-		return dto.AttendanceInResponse{}, dto.ErrInvalidExtensionPhoto
-	}
+	if req.FileHeader != nil || req.FileReader != nil {
+		ext := strings.TrimPrefix(filepath.Ext(req.FileHeader.Filename), ".")
+		ext = strings.ToLower(ext)
+		if ext != "jpg" && ext != "jpeg" && ext != "png" {
+			return dto.AttendanceInResponse{}, dto.ErrInvalidExtensionPhoto
+		}
 
-	fileName := fmt.Sprintf("%s_%s.%s",
-		strings.ReplaceAll(strings.ToLower(user.Name), " ", "_"),
-		formatDate.Format("20060102_150405"),
-		ext,
-	)
+		fileName := fmt.Sprintf("%s_%s.%s",
+			strings.ReplaceAll(strings.ToLower(user.Name), " ", "_"),
+			formatDate.Format("20060102_150405"),
+			ext,
+		)
 
-	_ = os.MkdirAll("assets", os.ModePerm)
-	savePath := fmt.Sprintf("assets/%s", fileName)
+		_ = os.MkdirAll("assets/attendance/attendance_in", os.ModePerm)
+		savePath := fmt.Sprintf("assets/attendance/attendance_in/%s", fileName)
 
-	out, err := os.Create(savePath)
-	if err != nil {
-		return dto.AttendanceInResponse{}, dto.ErrCreateFile
-	}
-	defer out.Close()
+		out, err := os.Create(savePath)
+		if err != nil {
+			return dto.AttendanceInResponse{}, dto.ErrCreateFile
+		}
+		defer out.Close()
 
-	if _, err := io.Copy(out, req.FileReader); err != nil {
-		return dto.AttendanceInResponse{}, dto.ErrSaveFile
+		if _, err := io.Copy(out, req.FileReader); err != nil {
+			return dto.AttendanceInResponse{}, dto.ErrSaveFile
+		}
+		req.PhotoIn = fileName
 	}
 
 	latIn, err1 := strconv.ParseFloat(req.LatitudeIn, 64)
@@ -428,7 +459,7 @@ func (us *UserService) CreateAttendance(ctx context.Context, req dto.CreateAtten
 		ID:          uuid.New(),
 		Status:      req.Status,
 		DateIn:      &formatDate,
-		PhotoIn:     fileName,
+		PhotoIn:     req.PhotoIn,
 		LatitudeIn:  req.LatitudeIn,
 		LongitudeIn: req.LongitudeIn,
 		UserID:      &user.ID,
@@ -489,8 +520,8 @@ func (us *UserService) UpdateAttendanceOut(ctx context.Context, req dto.UpdateAt
 	)
 	attendance.PhotoOut = fileName
 
-	_ = os.MkdirAll("assets", os.ModePerm)
-	savePath := fmt.Sprintf("assets/%s", fileName)
+	_ = os.MkdirAll("assets/attendance/attendance_out", os.ModePerm)
+	savePath := fmt.Sprintf("assets/attendance/attendance_out/%s", fileName)
 
 	out, err := os.Create(savePath)
 	if err != nil {

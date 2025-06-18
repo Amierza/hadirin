@@ -1,0 +1,13 @@
+*.env
+storage/
+volumes/
+.vscode/
+assets/**
+!assets/
+!assets/user/
+!assets/user/.gitkeep
+!assets/attendance/
+!assets/attendance/attendance_in
+!assets/attendance/attendance_in/.gitkeep
+!assets/attendance/attendance_out
+!assets/attendance/attendance_out/.gitkeep
