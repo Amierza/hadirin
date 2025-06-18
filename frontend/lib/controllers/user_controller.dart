@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:frontend/models/error_model.dart';
 import 'package:frontend/models/user_model.dart';
 import 'package:frontend/services/user_service.dart';
 import 'package:get/get.dart';
@@ -49,20 +50,39 @@ class UserController extends GetxController {
   void updateUser() async {
     isLoading.value = true;
     try {
+      final Map<String, dynamic> updatedFields = {};
+
+      // Only add changed fields
+      if (nameController.text != user.value?.userName) {
+        updatedFields['name'] = nameController.text;
+      }
+      if (emailController.text != user.value?.userEmail) {
+        updatedFields['email'] = emailController.text;
+      }
+      if (phoneNumberController.text != user.value?.userPhoneNumber) {
+        updatedFields['phone_number'] = phoneNumberController.text;
+      }
+
+      if (updatedFields.isEmpty && selectedPhoto == null) {
+        Get.snackbar("Info", "No changes detected");
+        return;
+      }
+
       final response = await UserService.updateUser(
-        name: nameController.text,
-        email: emailController.text,
-        phoneNumber: phoneNumberController.text,
+        updatedFields: updatedFields,
         imageFile: selectedPhoto,
       );
-      print(response);
 
       if (response is UserResponse) {
-        Get.snackbar("Update profil berhasil", "Profil berhasil diperbarui");
-        fetchUserDetail();
-      } else {
-        Get.snackbar("Update profil gagal", "Gagal melakukan update profil");
+        Get.snackbar("Success", "Profile updated successfully");
+        fetchUserDetail(); // Refresh data
+      } else if (response is ErrorResponse) {
+        Get.snackbar("Error", response.message);
+      } else if (response is String) {
+        Get.snackbar("Error", response);
       }
+    } catch (e) {
+      Get.snackbar("Error", "An unexpected error occurred");
     } finally {
       isLoading.value = false;
     }

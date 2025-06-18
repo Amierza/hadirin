@@ -33,24 +33,21 @@ class UserService {
   }
 
   static Future<dynamic> updateUser({
-    required String name,
-    required String email,
-    required String phoneNumber,
+    Map<String, dynamic>? updatedFields,
     File? imageFile,
   }) async {
     final token = box.read("token");
 
     final uri = Uri.parse("$baseUrl/user/update-user");
     final request = http.MultipartRequest(
-      "POST",
+      "PATCH",
       uri,
-    ); // Bisa pakai PUT juga jika backend mendukung
+    ); 
     request.headers["Authorization"] = "Bearer $token";
-
-    // Tambahkan data field biasa
-    request.fields['name'] = name;
-    request.fields['email'] = email;
-    request.fields['phone_number'] = phoneNumber;
+    
+    updatedFields?.forEach((key, value) {
+      request.fields[key] = value.toString();
+    });
 
     // Tambahkan file image jika ada
     if (imageFile != null) {
