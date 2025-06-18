@@ -29,3 +29,10 @@ func ParseDateOnly(dateStr string) (time.Time, error) {
 
 	return parsedDate, nil
 }
+
+func DerefTime(t *time.Time) time.Time {
+	if t != nil {
+		return *t
+	}
+	return time.Time{}
+}
