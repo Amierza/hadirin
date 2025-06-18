@@ -582,8 +582,8 @@ func (us *UserService) GetAllAttendance(ctx context.Context) ([]dto.AttendanceOu
 		attendances = append(attendances, dto.AttendanceOutResponse{
 			ID:           attendance.ID,
 			Status:       attendance.Status,
-			DateIn:       *attendance.DateIn,
-			DateOut:      *attendance.DateOut,
+			DateIn:       helpers.DerefTime(attendance.DateIn),
+			DateOut:      helpers.DerefTime(attendance.DateOut),
 			PhotoIn:      attendance.PhotoIn,
 			PhotoOut:     attendance.PhotoOut,
 			LatitudeIn:   attendance.LatitudeIn,
@@ -616,8 +616,8 @@ func (us *UserService) GetAttendanceToday(ctx context.Context, req dto.Attendanc
 	attendance := dto.AttendanceOutResponse{
 		ID:           att.ID,
 		Status:       att.Status,
-		DateIn:       *att.DateIn,
-		DateOut:      *att.DateOut,
+		DateIn:       helpers.DerefTime(att.DateIn),
+		DateOut:      helpers.DerefTime(att.DateOut),
 		PhotoIn:      att.PhotoIn,
 		PhotoOut:     att.PhotoOut,
 		LatitudeIn:   att.LatitudeIn,
