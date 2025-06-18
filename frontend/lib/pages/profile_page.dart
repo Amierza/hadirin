@@ -5,6 +5,7 @@ import 'package:frontend/controllers/user_controller.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:frontend/widgets/navbar.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -131,7 +132,10 @@ class ProfilePage extends StatelessWidget {
                     foregroundColor: Colors.white,
                     iconColor: Colors.white,
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    GetStorage().remove("token");
+                    Get.offNamed('/login');
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Row(
