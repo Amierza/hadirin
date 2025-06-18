@@ -155,12 +155,14 @@ type (
 	}
 	UpdateUserRequest struct {
 		Name        string     `json:"name,omitempty"`
-		Email       string     `json:"email"`
-		Password    string     `json:"password"`
-		PhoneNumber string     `json:"phone_number"`
-		Photo       string     `json:"photo"`
-		RoleID      *uuid.UUID `gorm:"type:uuid" json:"role_id,omitempty"`
-		PositionID  *uuid.UUID `gorm:"type:uuid" json:"position_id,omitempty"`
+		Email       string     `json:"email,omitempty"`
+		Password    string     `json:"password,omitempty"`
+		PhoneNumber string     `json:"phone_number,omitempty"`
+		Photo       string     `json:"photo,omitempty"`
+		RoleID      *uuid.UUID `json:"role_id,omitempty"`
+		PositionID  *uuid.UUID `json:"position_id,omitempty"`
+		FileHeader  *multipart.FileHeader
+		FileReader  multipart.File
 	}
 	// Role
 	RoleResponse struct {
