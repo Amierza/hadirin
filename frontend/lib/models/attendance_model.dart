@@ -60,7 +60,7 @@ class Attendance {
 class AllAttendanceResponse {
   final bool status;
   final String message;
-  final List<Attendance> data;
+  final List<Attendance>? data;
 
   AllAttendanceResponse({
     required this.status,

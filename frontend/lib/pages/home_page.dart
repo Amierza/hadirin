@@ -189,7 +189,7 @@ class _HomePageState extends State<HomePage> {
                                           )
                                           : '--:--:--',
                                   desc:
-                                      'Tepat Waktu', // You can add logic for late/early
+                                      'Sesuai', // You can add logic for late/early
                                 ),
 
                               const SizedBox(height: 15),
@@ -202,7 +202,7 @@ class _HomePageState extends State<HomePage> {
                                   time: timeFormat.format(
                                     todayAttendance.attDateOut!.toLocal(),
                                   ),
-                                  desc: 'Tepat Waktu',
+                                  desc: 'Berhasil',
                                 )
                               else if (hasCheckedIn && !hasCheckedOut)
                                 cardabsen(
@@ -252,19 +252,23 @@ class _HomePageState extends State<HomePage> {
                                           : attendanceController
                                               .attendanceList
                                               .length,
-                                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                                  separatorBuilder:
+                                      (context, index) =>
+                                          const SizedBox(height: 16),
                                   itemBuilder: (context, index) {
                                     final data =
                                         attendanceController
                                             .attendanceList[index];
 
-                                    final dateFormat = DateFormat('d MMMM yyyy');
+                                    final dateFormat = DateFormat(
+                                      'd MMMM yyyy',
+                                    );
                                     final dateTimeIn = data.attDateIn.toLocal();
                                     final hasCheckedOut =
                                         data.attDateOut != null &&
                                         data.attDateOut !=
                                             "0001-01-01T00:00:00Z";
-     
+
                                     final date = dateFormat.format(dateTimeIn);
                                     final masuk = timeFormat.format(dateTimeIn);
                                     final keluar =

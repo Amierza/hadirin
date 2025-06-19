@@ -30,43 +30,11 @@ Future<void> main() async {
 
   try {
     await GetStorage.init();
-    await _cleanupOldAttendanceData();
   } catch (error) {
     print("Failed to initialize GetStorage: $error");
   }
 
   runApp(await buildApp());
-}
-
-Future<void> _cleanupOldAttendanceData() async {
-  final box = GetStorage();
-  try {
-    final lastCheckIn = box.read('last_check_in_time');
-    if (lastCheckIn != null) {
-      final lastCheckInDate = DateTime.parse(lastCheckIn);
-      final today = DateTime.now();
-
-      // If last check-in wasn't today, clear all attendance data
-      if (!_isSameDay(lastCheckInDate, today)) {
-        box.remove('current_att_id');
-        box.remove('last_check_in_time');
-        box.remove('is_checked_in');
-        if (kDebugMode) {
-          print(
-            '🧹 Cleared stale attendance data from ${DateFormat.yMd().format(lastCheckInDate)}',
-          );
-        }
-      }
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('❌ Error cleaning attendance data: $e');
-    }
-  }
-}
-
-bool _isSameDay(DateTime a, DateTime b) {
-  return a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 Future<Widget> buildApp() async {
