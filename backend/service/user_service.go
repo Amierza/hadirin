@@ -31,7 +31,7 @@ type (
 		// User
 		GetDetailUser(ctx context.Context) (dto.AllUserResponse, error)
 		UpdateUser(ctx context.Context, req dto.UpdateUserRequest) (dto.AllUserResponse, error)
-		GetAllAttendance(ctx context.Context) ([]dto.AttendanceOutResponse, error)
+		GetAllAttendance(ctx context.Context, req dto.AttendanceMonthRequest) ([]dto.AttendanceOutResponse, error)
 		GetAttendanceToday(ctx context.Context, req dto.AttendanceTodayRequest) (dto.AttendanceOutResponse, error)
 
 		// Attendance
@@ -564,7 +564,7 @@ func (us *UserService) UpdateAttendanceOut(ctx context.Context, req dto.UpdateAt
 		LongitudeOut: attendance.LongitudeOut,
 	}, nil
 }
-func (us *UserService) GetAllAttendance(ctx context.Context) ([]dto.AttendanceOutResponse, error) {
+func (us *UserService) GetAllAttendance(ctx context.Context, req dto.AttendanceMonthRequest) ([]dto.AttendanceOutResponse, error) {
 	token := ctx.Value("Authorization").(string)
 
 	userID, err := us.jwtService.GetUserIDByToken(token)
@@ -572,7 +572,7 @@ func (us *UserService) GetAllAttendance(ctx context.Context) ([]dto.AttendanceOu
 		return []dto.AttendanceOutResponse{}, dto.ErrGetUserIDFromToken
 	}
 
-	datas, err := us.userRepo.GetAllAttendance(ctx, nil, userID)
+	datas, err := us.userRepo.GetAllAttendance(ctx, nil, userID, req.Month)
 	if err != nil {
 		return []dto.AttendanceOutResponse{}, dto.ErrGetAllAttendance
 	}

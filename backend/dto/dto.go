@@ -227,6 +227,9 @@ type (
 		LatitudeOut  string    `json:"att_latitude_out"`
 		LongitudeOut string    `json:"att_longitude_out"`
 	}
+	AttendanceMonthRequest struct {
+		Month string `form:"month"`
+	}
 	AttendanceTodayRequest struct {
 		Date string `json:"date" form:"date"`
 	}

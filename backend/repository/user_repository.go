@@ -25,7 +25,7 @@ type (
 		GetAllPermit(ctx context.Context, tx *gorm.DB, userID string, req dto.PermitMonthRequest) (dto.AllPermitRepositoryResponse, error)
 		GetPermitByID(ctx context.Context, tx *gorm.DB, permitID string) (entity.Permit, bool, error)
 		GetAttendanceByID(ctx context.Context, tx *gorm.DB, attendanceID string) (entity.Attendance, bool, error)
-		GetAllAttendance(ctx context.Context, tx *gorm.DB, userID string) ([]entity.Attendance, error)
+		GetAllAttendance(ctx context.Context, tx *gorm.DB, userID string, month string) ([]entity.Attendance, error)
 		GetAttendanceToday(ctx context.Context, tx *gorm.DB, userID string, date *time.Time) (entity.Attendance, error)
 
 		// POST / Create
@@ -210,7 +210,7 @@ func (ur *UserRepository) GetAttendanceByID(ctx context.Context, tx *gorm.DB, at
 
 	return attendance, true, nil
 }
-func (ur *UserRepository) GetAllAttendance(ctx context.Context, tx *gorm.DB, userID string) ([]entity.Attendance, error) {
+func (ur *UserRepository) GetAllAttendance(ctx context.Context, tx *gorm.DB, userID string, month string) ([]entity.Attendance, error) {
 	if tx == nil {
 		tx = ur.db
 	}
@@ -221,6 +221,18 @@ func (ur *UserRepository) GetAllAttendance(ctx context.Context, tx *gorm.DB, use
 	query := tx.WithContext(ctx).Model(&entity.Attendance{}).
 		Preload("User.Position").
 		Preload("User.Role")
+
+	if month != "" {
+		validMonths := map[string]bool{
+			"01": true, "02": true, "03": true, "04": true, "05": true, "06": true,
+			"07": true, "08": true, "09": true, "10": true, "11": true, "12": true,
+		}
+		if validMonths[month] {
+			monthInt, _ := strconv.Atoi(month)
+			fmt.Println("Month:", monthInt)
+			query = query.Where("EXTRACT(MONTH FROM date_in) = ?", monthInt)
+		}
+	}
 
 	if err := query.Where("user_id = ?", userID).Order("created_at DESC").Find(&attendances).Error; err != nil {
 		return []entity.Attendance{}, err

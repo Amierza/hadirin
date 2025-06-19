@@ -182,7 +182,14 @@ func (uh *UserHandler) UpdateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 func (uh *UserHandler) GetAllAttendance(ctx *gin.Context) {
-	result, err := uh.userService.GetAllAttendance(ctx)
+	var payload dto.AttendanceMonthRequest
+	if err := ctx.ShouldBind(&payload); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := uh.userService.GetAllAttendance(ctx, payload)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_ALL_ATTENDANCE, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -194,7 +201,7 @@ func (uh *UserHandler) GetAllAttendance(ctx *gin.Context) {
 }
 func (uh *UserHandler) GetAttendanceToday(ctx *gin.Context) {
 	var payload dto.AttendanceTodayRequest
-	if err := ctx.ShouldBindQuery(&payload); err != nil {
+	if err := ctx.ShouldBind(&payload); err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
