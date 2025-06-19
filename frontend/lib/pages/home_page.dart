@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/controllers/attendance_controller.dart';
 import 'package:frontend/pages/presence_history_page.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:get/get.dart';
@@ -6,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/widgets/navbar.dart';
 import 'package:frontend/widgets/cardabsen.dart';
 import 'package:frontend/widgets/cardabsenlong.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,17 +18,23 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int attendanceStreak = 0;
+  final DateFormat dateFormat = DateFormat('MMMM d, yyyy');
+  final DateFormat timeFormat = DateFormat('HH:mm:ss');
 
   @override
   Widget build(BuildContext context) {
+    final attendanceTodayController = Get.put(AttendanceTodayController());
+    final attendanceController = Get.put(AttendanceController());
+    final now = DateTime.now();
+
     return Scaffold(
       backgroundColor: secondaryBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             Container(
-              width: double.infinity, // Make it span the full width
-              color: backgroundColor, // White background
+              width: double.infinity,
+              color: backgroundColor,
               padding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
                 vertical: 10.0,
@@ -42,7 +50,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Text(
-                    "Februari 17, 2025",
+                    dateFormat.format(now),
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: primaryTextColor,
@@ -82,46 +90,52 @@ class _HomePageState extends State<HomePage> {
                 color: secondaryColor,
                 borderRadius: BorderRadius.circular(16.0),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Streak Absensi',
-                            style: TextStyle(
-                              fontSize: 17.0,
-                              fontWeight: regular,
+              child: Obx(() {
+                if (attendanceController.isLoading == true) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Total Absensi',
+                              style: TextStyle(
+                                fontSize: 17.0,
+                                fontWeight: regular,
+                                color: backgroundColor,
+                              ),
+                            ),
+                            Text(
+                              '${attendanceController.attendanceList.length} Hari',
+                              style: TextStyle(
+                                fontSize: 30.0,
+                                fontWeight: extraBold,
+                                color: backgroundColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 60.0,
                               color: backgroundColor,
                             ),
-                          ),
-                          Text(
-                            '$attendanceStreak Hari',
-                            style: TextStyle(
-                              fontSize: 30.0,
-                              fontWeight: extraBold,
-                              color: backgroundColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 60.0,
-                            color: backgroundColor,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -132,70 +146,155 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: ListView(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 15),
-                            cardabsen(
-                              image: 'assets/muka_presensi.png',
-                              date: 'April 17, 2023',
-                              status: 'Masuk',
-                              time: '18:35:40',
-                              desc: 'Tepat Waktu',
-                            ),
-                            const SizedBox(height: 15),
-                            cardabsen(
-                              image: 'assets/muka_presensi.png',
-                              date: 'April 17, 2023',
-                              status: 'Pulang',
-                              time: '18:35:40',
-                              desc: 'Tepat Waktu',
-                            ),
-                            const SizedBox(height: 30),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const SizedBox(width: 10),
-                                Text(
-                                  "Bulan ini",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 30,
-                                    fontWeight: black,
-                                    color: primaryTextColor,
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    Get.to(() => const PresenceHistoryPage());
-                                  },
-                                  icon: Icon(
-                                    Icons.arrow_forward_rounded,
-                                    size: 30,
-                                    color: primaryTextColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Cardabsenlong(
-                              day: '17',
-                              date: 'Mon',
-                              status1: 'Masuk',
-                              status2: 'Pulang',
-                              time1: '17:00',
-                              time2: '17:00',
-                            ),
-                          ],
+                  child: Obx(() {
+                    if (attendanceTodayController.isLoading.value) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (attendanceTodayController
+                        .errorMessage
+                        .value
+                        .isNotEmpty) {
+                      return Center(
+                        child: Text(
+                          attendanceTodayController.errorMessage.value,
                         ),
-                      ),
-                    ],
-                  ),
+                      );
+                    }
+
+                    final todayAttendance =
+                        attendanceTodayController.attendance.value;
+                    final hasCheckedIn = todayAttendance?.attDateIn != null;
+                    final hasCheckedOut =
+                        todayAttendance?.attDateOut != null &&
+                        todayAttendance!.attDateOut != "0001-01-01T00:00:00Z";
+
+                    return ListView(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 15),
+                              // Check-in Card
+                              if (hasCheckedIn)
+                                cardabsen(
+                                  image: 'assets/muka_presensi.png',
+                                  date: dateFormat.format(now),
+                                  status: 'Masuk',
+                                  time:
+                                      todayAttendance != null
+                                          ? timeFormat.format(
+                                            todayAttendance.attDateIn.toLocal(),
+                                          )
+                                          : '--:--:--',
+                                  desc:
+                                      'Tepat Waktu', // You can add logic for late/early
+                                ),
+
+                              const SizedBox(height: 15),
+                              // Check-out Card
+                              if (hasCheckedOut)
+                                cardabsen(
+                                  image: 'assets/muka_presensi.png',
+                                  date: dateFormat.format(now),
+                                  status: 'Pulang',
+                                  time: timeFormat.format(
+                                    todayAttendance.attDateOut!.toLocal(),
+                                  ),
+                                  desc: 'Tepat Waktu',
+                                )
+                              else if (hasCheckedIn && !hasCheckedOut)
+                                cardabsen(
+                                  image: 'assets/muka_presensi.png',
+                                  date: dateFormat.format(now),
+                                  status: 'Pulang',
+                                  time: '-',
+                                  desc: 'Menunggu',
+                                ),
+
+                              const SizedBox(height: 30),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    "Bulan ini",
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 30,
+                                      fontWeight: black,
+                                      color: primaryTextColor,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      Get.to(() => const PresenceHistoryPage());
+                                    },
+                                    icon: Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 30,
+                                      color: primaryTextColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              // Example monthly card (you can replace with actual data)
+                              Obx(
+                                () => ListView.separated(
+                                  shrinkWrap: true,
+                                  itemCount:
+                                      attendanceController
+                                                  .attendanceList
+                                                  .length >
+                                              3
+                                          ? 3
+                                          : attendanceController
+                                              .attendanceList
+                                              .length,
+                                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                                  itemBuilder: (context, index) {
+                                    final data =
+                                        attendanceController
+                                            .attendanceList[index];
+
+                                    final dateFormat = DateFormat('d MMMM yyyy');
+                                    final dateTimeIn = data.attDateIn.toLocal();
+                                    final hasCheckedOut =
+                                        data.attDateOut != null &&
+                                        data.attDateOut !=
+                                            "0001-01-01T00:00:00Z";
+     
+                                    final date = dateFormat.format(dateTimeIn);
+                                    final masuk = timeFormat.format(dateTimeIn);
+                                    final keluar =
+                                        hasCheckedOut
+                                            ? timeFormat.format(
+                                              data.attDateOut!,
+                                            )
+                                            : '-';
+
+                                    return Cardabsenlong(
+                                      day: getDayName(dateTimeIn.weekday),
+                                      date: date.split(' ')[0],
+                                      status1: "Masuk",
+                                      status2: "Pulang",
+                                      time1: masuk,
+                                      time2: keluar,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
               ),
             ),
+
             CustomBottomNavigationBar(
               onItemTapped: (index) {},
               currentIndex: 0,
@@ -204,5 +303,18 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  String getDayName(int weekday) {
+    const days = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
+    return days[weekday - 1];
   }
 }

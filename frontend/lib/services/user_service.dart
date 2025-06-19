@@ -25,6 +25,7 @@ class UserService {
     );
 
     final responseBody = jsonDecode(response.body);
+    print(responseBody);
     if (responseBody['status'] == true) {
       return UserResponse.fromJson(responseBody);
     } else {

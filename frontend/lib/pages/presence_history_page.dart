@@ -43,9 +43,7 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
       appBar: AppBar(
         title: Text(
           'Riwayat Absensi',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.bold,
-          ),
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -78,23 +76,25 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
                   onChanged: (String? newValue) {
                     if (newValue != null) {
                       setState(() => selectedMonth = newValue);
-                      attendanceController.filterByMonth(
-                          months.indexOf(newValue) + 1);
+                      final monthIndex = months.indexOf(newValue) + 1;
+
+                      attendanceController.filterByMonth(monthIndex);
                     }
                   },
-                  items: months.map((month) {
-                    return DropdownMenuItem(
-                      value: month,
-                      child: Text(
-                        month,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                  items:
+                      months.map((month) {
+                        return DropdownMenuItem(
+                          value: month,
+                          child: Text(
+                            month,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        );
+                      }).toList(),
                 ),
               ),
             ),
@@ -102,8 +102,7 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
             Expanded(
               child: Obx(() {
                 if (attendanceController.isLoading.value) {
-                  return const Center(
-                      child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (attendanceController.errorMessage.value.isNotEmpty) {
                   return Center(
@@ -128,7 +127,9 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
                   },
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     itemCount: attendanceController.filteredList.length,
                     itemBuilder: (context, index) {
                       final att = attendanceController.filteredList[index];
@@ -150,14 +151,12 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
 
   Widget _buildAttendanceCard(Attendance att) {
     final dateTimeIn = att.attDateIn.toLocal();
-    final hasCheckedOut = att.attDateOut != null &&
-        att.attDateOut != "0001-01-01T00:00:00Z";
-    
+    final hasCheckedOut =
+        att.attDateOut != null && att.attDateOut != "0001-01-01T00:00:00Z";
+
     final date = dateFormat.format(dateTimeIn);
     final masuk = timeFormat.format(dateTimeIn);
-    final keluar = hasCheckedOut
-        ? timeFormat.format(att.attDateOut!)
-        : '-';
+    final keluar = hasCheckedOut ? timeFormat.format(att.attDateOut!) : '-';
 
     return AbsensiCard(
       date: date,
@@ -172,7 +171,15 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
   }
 
   String getDayName(int weekday) {
-    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    const days = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
     return days[weekday - 1];
   }
 }
@@ -205,9 +212,10 @@ class AbsensiCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
-            color: hasCheckedOut
-                ? const Color(0xFF2CCE66) // Green if checked out
-                : const Color(0xFFFFA000), // Orange if not checked out
+            color:
+                hasCheckedOut
+                    ? const Color(0xFF2CCE66) // Green if checked out
+                    : const Color(0xFFFFA000), // Orange if not checked out
             width: 2,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -293,9 +301,12 @@ class AbsensiCard extends StatelessWidget {
                         keluar,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 15,
-                          color: hasCheckedOut
-                              ? Colors.black54
-                              : const Color(0xFFFFA000), // Orange if not checked out
+                          color:
+                              hasCheckedOut
+                                  ? Colors.black54
+                                  : const Color(
+                                    0xFFFFA000,
+                                  ), // Orange if not checked out
                         ),
                       ),
                     ],
