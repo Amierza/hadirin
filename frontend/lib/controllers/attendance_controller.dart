@@ -9,6 +9,7 @@ class AttendanceController extends GetxController {
   final filteredList = <Attendance>[].obs;
   final isLoading = false.obs;
   final errorMessage = ''.obs;
+  var isEmpty = false.obs;
   var selectedMonth = DateFormat('MM').format(DateTime.now()).obs;
 
   @override
@@ -27,13 +28,18 @@ class AttendanceController extends GetxController {
       final result = await AttendanceService.getAllAttendance(monthStr);
 
       if (result is AllAttendanceResponse) {
+        if (result.data.isEmpty) {
+          isEmpty.value = true;
+          return;
+        }
+
         attendanceList.assignAll(result.data);
         filteredList.assignAll(result.data);
       } else if (result is ErrorResponse) {
         errorMessage.value = result.message;
       }
     } catch (e) {
-      errorMessage.value = 'Error: ${e.toString()}';
+      print("Error: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }
