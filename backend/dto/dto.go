@@ -228,7 +228,7 @@ type (
 		LongitudeOut string    `json:"att_longitude_out"`
 	}
 	AttendanceTodayRequest struct {
-		Date string `json:"date"`
+		Date string `json:"date" form:"date"`
 	}
 	// Permit
 	PermitResponse struct {

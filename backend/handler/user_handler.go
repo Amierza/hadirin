@@ -194,7 +194,7 @@ func (uh *UserHandler) GetAllAttendance(ctx *gin.Context) {
 }
 func (uh *UserHandler) GetAttendanceToday(ctx *gin.Context) {
 	var payload dto.AttendanceTodayRequest
-	if err := ctx.ShouldBindJSON(&payload); err != nil {
+	if err := ctx.ShouldBindQuery(&payload); err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
