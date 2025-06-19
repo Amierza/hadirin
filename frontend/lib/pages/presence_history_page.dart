@@ -36,7 +36,8 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final attendanceController = Get.put(AttendanceController());
+    final AttendanceController attendanceController =
+        Get.find<AttendanceController>();
 
     return Scaffold(
       backgroundColor: secondaryBackgroundColor,
@@ -48,99 +49,121 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Month Dropdown
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: tertiaryTextColor.withOpacity(0.2),
-                    spreadRadius: 1,
-                    blurRadius: 2,
+        child: Obx(() {
+          if (attendanceController.isEmpty.value == true) {
+            return Center(
+              child: Column(
+                children: [
+                  Icon(Icons.people, size: 60),
+                  Text(
+                    'Belum ada presensi yang dilakukan',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: medium,
+                    ),
                   ),
                 ],
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: selectedMonth,
-                  isExpanded: true,
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.black,
-                  ),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() => selectedMonth = newValue);
-                      final monthIndex = months.indexOf(newValue) + 1;
+            );
+          }
 
-                      attendanceController.filterByMonth(monthIndex);
-                    }
-                  },
-                  items:
-                      months.map((month) {
-                        return DropdownMenuItem(
-                          value: month,
-                          child: Text(
-                            month,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+          return Column(
+            children: [
+              // Month Dropdown
+              Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: tertiaryTextColor.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedMonth,
+                    isExpanded: true,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.black,
+                    ),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() => selectedMonth = newValue);
+                        final monthIndex = months.indexOf(newValue) + 1;
+
+                        attendanceController.filterByMonth(monthIndex);
+                      }
+                    },
+                    items:
+                        months.map((month) {
+                          return DropdownMenuItem(
+                            value: month,
+                            child: Text(
+                              month,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          );
+                        }).toList(),
+                  ),
                 ),
               ),
-            ),
-            // List Absensi
-            Expanded(
-              child: Obx(() {
-                if (attendanceController.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (attendanceController.errorMessage.value.isNotEmpty) {
-                  return Center(
-                    child: Text(
-                      attendanceController.errorMessage.value,
-                      style: GoogleFonts.plusJakartaSans(),
-                    ),
-                  );
-                }
-                if (attendanceController.filteredList.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'Tidak ada data absensi untuk bulan ini',
-                      style: GoogleFonts.plusJakartaSans(),
-                    ),
-                  );
-                }
+              // List Absensi
+              Expanded(
+                child: Obx(() {
+                  if (attendanceController.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (attendanceController.errorMessage.value.isNotEmpty) {
+                    return Center(
+                      child: Text(
+                        attendanceController.errorMessage.value,
+                        style: GoogleFonts.plusJakartaSans(),
+                      ),
+                    );
+                  }
+                  if (attendanceController.filteredList.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Tidak ada data absensi untuk bulan ini',
+                        style: GoogleFonts.plusJakartaSans(),
+                      ),
+                    );
+                  }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    await attendanceController.fetchAllAttendance();
-                  },
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    itemCount: attendanceController.filteredList.length,
-                    itemBuilder: (context, index) {
-                      final att = attendanceController.filteredList[index];
-                      return _buildAttendanceCard(att);
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      await attendanceController.fetchAllAttendance();
                     },
-                  ),
-                );
-              }),
-            ),
-          ],
-        ),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      itemCount: attendanceController.filteredList.length,
+                      itemBuilder: (context, index) {
+                        final att = attendanceController.filteredList[index];
+                        return _buildAttendanceCard(att);
+                      },
+                    ),
+                  );
+                }),
+              ),
+            ],
+          );
+        }),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         onItemTapped: (index) {},
