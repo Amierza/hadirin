@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:frontend/models/error_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -7,8 +8,9 @@ import 'package:path/path.dart';
 import 'package:intl/intl.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:frontend/config/config.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/services/attendance_service.dart';
+import 'package:frontend/models/attendance_model.dart';
 
 class PresenceController extends GetxController {
   // State variables
@@ -16,15 +18,14 @@ class PresenceController extends GetxController {
   var isCheckedIn = false.obs;
   var userPosition = Rx<Position?>(null);
   var lastCheckInTime = Rx<DateTime?>(null);
+  var checkOutTime = Rx<DateTime?>(null);
   var currentAttendanceId = Rx<String?>(null);
+  var photoInUrl = Rx<String?>(null);
+  var photoOutUrl = Rx<String?>(null);
+  var status = Rx<String?>(null);
 
-  // Storage keys
-  static const String _attIdKey = 'current_att_id';
-  static const String _checkInTimeKey = 'last_check_in_time';
-  static const String _isCheckedInKey = 'is_checked_in';
-  static const String _checkOutStatusKey = 'check_out_status';
-  static const String _checkOutTimeKey = 'last_check_out_time';
-  static const String _tokenKey = 'token';
+  // Storage instance
+  final GetStorage box = GetStorage();
 
   // Location configuration
   final double targetLatitude = -7.266422;
@@ -34,114 +35,66 @@ class PresenceController extends GetxController {
   // API configuration
   String get _apiBaseUrl => Config.apiKey;
 
-  // Storage instance
-  final GetStorage box = GetStorage();
-
   @override
   void onInit() {
     super.onInit();
-    _loadPersistedData();
-    _loadTodayAttendance();
+    _initializeData();
   }
 
-  // Load persisted data from storage
-  void _loadPersistedData() {
-    try {
-      currentAttendanceId.value = box.read(_attIdKey);
-      final storedTime = box.read(_checkInTimeKey);
-      lastCheckInTime.value =
-          storedTime != null ? DateTime.parse(storedTime) : null;
-      isCheckedIn.value = box.read(_isCheckedInKey) ?? false;
-
-      // Check if already checked out today
-      final lastCheckOut = box.read(_checkOutTimeKey);
-      if (lastCheckOut != null && _isToday(DateTime.parse(lastCheckOut))) {
-        isCheckedIn.value = false;
-      }
-
-      if (kDebugMode) {
-        print('📦 Loaded persisted data:');
-        print(' - att_id: ${currentAttendanceId.value}');
-        print(' - last_check_in: ${lastCheckInTime.value}');
-        print(' - is_checked_in: ${isCheckedIn.value}');
-        print(' - last_check_out: ${box.read(_checkOutTimeKey)}');
-      }
-    } catch (e) {
-      print('❌ Error loading persisted data: $e');
-      _clearPersistedData();
-    }
+  Future<void> _initializeData() async {
+    await checkLocationPermission();
+    await getTodayAttendance();
   }
 
-  // Save data to storage
-  void _persistData() {
-    try {
-      box.write(_attIdKey, currentAttendanceId.value);
-      box.write(_checkInTimeKey, lastCheckInTime.value?.toIso8601String());
-      box.write(_isCheckedInKey, isCheckedIn.value);
-    } catch (e) {
-      print('❌ Error persisting data: $e');
-    }
-  }
-
-  // Clear attendance data from storage
-  void _clearPersistedData() {
-    box.remove(_attIdKey);
-    box.remove(_checkInTimeKey);
-    box.remove(_isCheckedInKey);
-    box.remove(_checkOutStatusKey);
-    box.remove(_checkOutTimeKey);
-  }
-
-  // Load today's attendance
-  Future<void> _loadTodayAttendance() async {
-    try {
-      await getTodayAttendance();
-    } catch (e) {
-      print("❌ Error loading attendance: $e");
-    }
-  }
-
-  // Clear all attendance data
-  void clearAttendanceData() {
-    currentAttendanceId.value = null;
-    isCheckedIn.value = false;
-    lastCheckInTime.value = null;
-    _clearPersistedData();
-  }
-
-  // Check if user has checked out today
-  bool isCheckedOutToday() {
-    final lastCheckOut = box.read(_checkOutTimeKey);
-    if (lastCheckOut != null) {
-      return _isToday(DateTime.parse(lastCheckOut));
-    }
-    return false;
-  }
-
-  // Get last checkout time
-  DateTime? getLastCheckOutTime() {
-    final lastCheckOut = box.read(_checkOutTimeKey);
-    return lastCheckOut != null ? DateTime.parse(lastCheckOut) : null;
-  }
-
-  // Get authentication token
+  // Get authentication token from storage
   String? _getToken() {
-    return box.read(_tokenKey);
+    try {
+      return box.read("token");
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Verify token exists and is valid
+  bool get isAuthenticated {
+    final token = _getToken();
+    return token != null && token.isNotEmpty;
   }
 
   // Prepare request headers
-  Map<String, String> _getHeaders() {
+  Map<String, String> _getHeaders({bool includeContentType = false}) {
     final token = _getToken();
-    return {
-      'Content-Type': 'application/json',
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-    };
+    if (token == null) {
+      throw Exception('Authentication token not found');
+    }
+
+    final headers = {'Authorization': 'Bearer $token'};
+
+    if (includeContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    return headers;
+  }
+
+  // Prepare multipart request headers
+  Map<String, String> _getMultipartHeaders() {
+    final token = _getToken();
+    if (token == null) {
+      throw Exception('Authentication token not found');
+    }
+    return {'Authorization': 'Bearer $token'};
   }
 
   // Check location permissions
   Future<void> checkLocationPermission() async {
     try {
       isLoading.value = true;
+
+      if (!isAuthenticated) {
+        throw Exception('User not authenticated');
+      }
+
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw Exception('Location services are disabled. Please enable GPS.');
@@ -163,8 +116,7 @@ class PresenceController extends GetxController {
 
       await _getUserLocation();
     } catch (e) {
-      print('❌ Location permission error: $e');
-      Get.snackbar('Error', e.toString());
+      _showErrorSnackbar('Error', e.toString());
       rethrow;
     } finally {
       isLoading.value = false;
@@ -178,10 +130,8 @@ class PresenceController extends GetxController {
       userPosition.value = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      print('📍 User location: ${userPosition.value}');
     } catch (e) {
-      print('❌ Failed to get location: $e');
-      Get.snackbar('Error', 'Failed to get location: ${e.toString()}');
+      _showErrorSnackbar('Error', 'Failed to get location: ${e.toString()}');
       userPosition.value = null;
       rethrow;
     } finally {
@@ -193,24 +143,19 @@ class PresenceController extends GetxController {
   Future<void> checkIn(File imageFile) async {
     try {
       isLoading.value = true;
-      print('🟢 Starting check-in process...');
 
-      // Check if already checked in today
-      if (isCheckedIn.value && _isToday(lastCheckInTime.value)) {
-        throw Exception('You have already checked in today');
+      if (!isAuthenticated) {
+        throw Exception('Authentication token not found. Please login again.');
       }
 
-      // Verify location is available
       if (userPosition.value == null) {
         throw Exception('Location not available. Please enable GPS.');
       }
 
-      // Prepare check-in request
       final uri = Uri.parse('$_apiBaseUrl/user/create-attendance');
       final request = http.MultipartRequest('POST', uri);
-      request.headers.addAll(_getHeaders());
+      request.headers.addAll(_getMultipartHeaders());
 
-      // Add image file
       request.files.add(
         await http.MultipartFile.fromPath(
           'att_photo_in',
@@ -219,7 +164,6 @@ class PresenceController extends GetxController {
         ),
       );
 
-      // Add location and timestamp
       final position = userPosition.value!;
       final now = DateTime.now();
       final dateIn = DateFormat("yyyy-MM-dd HH:mm:ss").format(now);
@@ -228,44 +172,33 @@ class PresenceController extends GetxController {
       request.fields['att_latitude_in'] = position.latitude.toString();
       request.fields['att_longitude_in'] = position.longitude.toString();
 
-      print('📤 Sending check-in data with date: $dateIn...');
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
       final responseData = json.decode(responseBody);
 
-      print('📥 Response Code: ${response.statusCode}');
-      if (kDebugMode) print('📥 Response Body: $responseBody');
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (responseData['status'] == true) {
-          final attId = responseData['data']['att_id'];
-          if (attId == null || attId.isEmpty) {
-            throw Exception('Invalid attendance ID received from server');
-          }
-
-          // Update state and persist
           isCheckedIn.value = true;
           lastCheckInTime.value = now;
-          currentAttendanceId.value = attId;
-          // Clear any previous checkout status
-          box.remove(_checkOutStatusKey);
-          box.remove(_checkOutTimeKey);
-          _persistData();
+          currentAttendanceId.value = responseData['data']['att_id'];
+          checkOutTime.value = null;
 
-          print('✅ Check-in successful. Attendance ID: $attId');
-          Get.snackbar('Success', 'Check-in successful');
+          await getTodayAttendance();
+          _showSuccessSnackbar('Success', 'Check-in successful');
         } else {
           throw Exception(responseData['message'] ?? 'Check-in failed');
         }
+      } else if (response.statusCode == 401) {
+        _handleUnauthorizedError();
+        throw Exception('Session expired. Please login again.');
       } else {
         throw Exception(
           responseData['error'] ?? 'Server error: ${response.statusCode}',
         );
       }
     } catch (e) {
-      print('❌ Check-in error: $e');
       isCheckedIn.value = false;
-      showErrorDialog(
+      _showErrorDialog(
         "Check-in Failed",
         e.toString(),
         () => checkIn(imageFile),
@@ -279,26 +212,25 @@ class PresenceController extends GetxController {
   Future<void> checkOut(File imageFile, {int retryCount = 3}) async {
     try {
       isLoading.value = true;
-      print('🔴 Starting check-out process...');
 
-      // Verify we have a current attendance ID
+      if (!isAuthenticated) {
+        throw Exception('Authentication token not found. Please login again.');
+      }
+
       if (currentAttendanceId.value == null) {
         throw Exception('No attendance record found. Please check-in first.');
       }
 
-      // Verify location is available
       if (userPosition.value == null) {
         throw Exception('Location not available. Please enable GPS.');
       }
 
-      // Prepare check-out URL with att_id
       final uri = Uri.parse(
         '$_apiBaseUrl/user/update-attendance/${currentAttendanceId.value}',
       );
       final request = http.MultipartRequest('PATCH', uri);
-      request.headers.addAll(_getHeaders());
+      request.headers.addAll(_getMultipartHeaders());
 
-      // Add image file
       request.files.add(
         await http.MultipartFile.fromPath(
           'att_photo_out',
@@ -307,16 +239,13 @@ class PresenceController extends GetxController {
         ),
       );
 
-      // Add location and timestamp
       final position = userPosition.value!;
-      final now = DateTime.now();
+      final now = DateTime.now().toLocal();
       final dateOut = DateFormat("yyyy-MM-dd HH:mm:ss").format(now);
 
       request.fields['att_date_out'] = dateOut;
       request.fields['att_latitude_out'] = position.latitude.toString();
       request.fields['att_longitude_out'] = position.longitude.toString();
-
-      print('📤 Sending check-out data with date: $dateOut...');
 
       for (int attempt = 1; attempt <= retryCount; attempt++) {
         try {
@@ -324,22 +253,20 @@ class PresenceController extends GetxController {
           final responseBody = await response.stream.bytesToString();
           final responseData = json.decode(responseBody);
 
-          print('📥 Response Code: ${response.statusCode}');
-          if (kDebugMode) print('📥 Response Body: $responseBody');
-
           if (response.statusCode == 200 || response.statusCode == 201) {
             if (responseData['status'] == true) {
-              // Update state and clear storage
-              clearAttendanceData();
-              // Store checkout status and time
-              box.write(_checkOutStatusKey, true);
-              box.write(_checkOutTimeKey, now.toIso8601String());
+              isCheckedIn.value = false;
+              checkOutTime.value = now;
 
-              Get.snackbar('Success', 'Check-out successful');
+              await getTodayAttendance();
+              _showSuccessSnackbar('Success', 'Check-out successful');
               return;
             } else {
               throw Exception(responseData['message'] ?? 'Check-out failed');
             }
+          } else if (response.statusCode == 401) {
+            _handleUnauthorizedError();
+            throw Exception('Session expired. Please login again.');
           } else {
             throw Exception(
               responseData['error'] ?? 'Server error: ${response.statusCode}',
@@ -347,21 +274,19 @@ class PresenceController extends GetxController {
           }
         } catch (e) {
           if (attempt == retryCount) rethrow;
-          print('⚠️ Check-out attempt $attempt failed. Retrying... ($e)');
           await Future.delayed(Duration(seconds: 2 * attempt));
         }
       }
     } catch (e) {
-      print('❌ Check-out error: $e');
       if (e.toString().contains('Broken pipe') ||
           e.toString().contains('SocketException')) {
-        showErrorDialog(
+        _showErrorDialog(
           "Network Error",
           "Connection to server was interrupted. Please check your network and try again.",
           () => checkOut(imageFile, retryCount: 1),
         );
       } else {
-        showErrorDialog(
+        _showErrorDialog(
           "Check-Out Failed",
           e.toString(),
           () => checkOut(imageFile),
@@ -372,47 +297,72 @@ class PresenceController extends GetxController {
     }
   }
 
-  // Get today's attendance from server
+  // Get today's attendance from server using the service
   Future<void> getTodayAttendance() async {
     try {
       isLoading.value = true;
-      final uri = Uri.parse('$_apiBaseUrl/user/attendances');
-      final response = await http.get(uri, headers: _getHeaders());
+      final now = DateTime.now();
+      final formattedDate = DateFormat('yyyy-MM-dd').format(now);
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData['status'] == true) {
-          final List data = responseData['data'];
-          for (final item in data) {
-            if (item['att_date_in'] != null &&
-                _isToday(DateTime.parse(item['att_date_in']))) {
-              currentAttendanceId.value = item['att_id'];
-              lastCheckInTime.value = DateTime.parse(item['att_date_in']);
-              isCheckedIn.value = item['att_date_out'] == null;
-              _persistData();
-              print("✅ Found today's attendance");
-              return;
-            }
-          }
-          clearAttendanceData();
-          print("ℹ️ No attendance found for today");
-        } else {
-          throw Exception(responseData['message'] ?? "Failed to fetch data");
+      final result = await AttendanceService.getattendancebyDate(formattedDate);
+
+      if (result is AttendanceResponse) {
+        final attendance = result.data;
+        currentAttendanceId.value = attendance.attId;
+        status.value = attendance.attStatus.toString();
+
+        if (attendance.attDateIn != null) {
+          lastCheckInTime.value = attendance.attDateIn;
+          isCheckedIn.value = attendance.attDateOut == null;
         }
-      } else {
-        throw Exception("Server error: ${response.statusCode}");
+
+        if (attendance.attDateOut != null) {
+          checkOutTime.value = attendance.attDateOut;
+          isCheckedIn.value = false;
+        }
+
+        photoInUrl.value = attendance.attPhotoIn;
+        photoOutUrl.value = attendance.attPhotoOut;
+      } else if (result is ErrorResponse) {
+        // Silently handle "No attendance record found" case
+        if (!result.message.contains("No attendance record found")) {
+          throw Exception(result.message);
+        }
+        _clearAttendanceData();
       }
     } catch (e) {
-      print("❌ Failed to get attendance: $e");
-      Get.snackbar("Error", "Failed to fetch attendance: ${e.toString()}");
+      // Removed the error snackbar for failed attendance fetch
+      _clearAttendanceData();
     } finally {
       isLoading.value = false;
     }
   }
 
+  // Clear attendance data
+  void _clearAttendanceData() {
+    currentAttendanceId.value = null;
+    lastCheckInTime.value = null;
+    checkOutTime.value = null;
+    isCheckedIn.value = false;
+    photoInUrl.value = null;
+    photoOutUrl.value = null;
+    status.value = null;
+  }
+
+  // Handle unauthorized error (401)
+  void _handleUnauthorizedError() {
+    box.remove("token");
+    _clearAttendanceData();
+  }
+
+  // Check if user has checked out today
+  bool isCheckedOutToday() {
+    if (checkOutTime.value == null) return false;
+    return _isToday(checkOutTime.value!);
+  }
+
   // Helper to check if date is today
-  bool _isToday(DateTime? date) {
-    if (date == null) return false;
+  bool _isToday(DateTime date) {
     final now = DateTime.now();
     return date.year == now.year &&
         date.month == now.month &&
@@ -420,22 +370,45 @@ class PresenceController extends GetxController {
   }
 
   // Show error dialog with retry option
-  void showErrorDialog(String title, String message, VoidCallback onRetry) {
-    Get.dialog(
-      AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              onRetry();
-            },
-            child: Text('Retry'),
-          ),
-        ],
-      ),
+  void _showErrorDialog(String title, String message, VoidCallback onRetry) {
+    Future.delayed(Duration.zero, () {
+      Get.dialog(
+        AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(onPressed: () => Get.back(), child: Text('Cancel')),
+            TextButton(
+              onPressed: () {
+                Get.back();
+                onRetry();
+              },
+              child: Text('Retry'),
+            ),
+          ],
+        ),
+        barrierDismissible: false,
+      );
+    });
+  }
+
+  // Show error snackbar
+  void _showErrorSnackbar(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  }
+
+  // Show success snackbar
+  void _showSuccessSnackbar(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
     );
   }
 

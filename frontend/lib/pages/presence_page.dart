@@ -6,7 +6,6 @@ import 'package:frontend/shared/theme.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart' as latLng2;
-import 'package:get_storage/get_storage.dart';
 
 class PresencePage extends StatefulWidget {
   const PresencePage({super.key});
@@ -19,7 +18,6 @@ class _PresencePageState extends State<PresencePage> {
   File? _image;
   final PresenceController presenceController = Get.put(PresenceController());
   final ImagePicker _picker = ImagePicker();
-  final GetStorage box = GetStorage();
 
   @override
   void initState() {
@@ -82,46 +80,10 @@ class _PresencePageState extends State<PresencePage> {
     presenceController.checkOut(_image!);
   }
 
-  void _clearStorage() {
-    // Clear all attendance-related storage values
-    box.remove('current_att_id');
-    box.remove('last_check_in_time');
-    box.remove('is_checked_in');
-    box.remove('check_out_status');
-    box.remove('last_check_out_time');
-    box.remove('attendance_completed'); // Add this line to clear the status
-
-    // Call the controller's method to clear attendance data
-    presenceController.clearAttendanceData();
-
-    // Reset the image state
-    setState(() {
-      _image = null;
-    });
-
-    // Show success message
-    Get.snackbar(
-      'Success',
-      'Storage cleared successfully',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Attendance'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: _clearStorage,
-            tooltip: 'Clear Storage',
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Attendance'), centerTitle: true),
       body: Obx(() {
         if (presenceController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
