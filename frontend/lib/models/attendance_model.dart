@@ -28,9 +28,10 @@ class Attendance {
       attId: json['att_id'],
       attStatus: json['att_status'],
       attDateIn: DateTime.parse(json['att_date_in']),
-      attDateOut: json['att_date_out'] != "0001-01-01T00:00:00Z"
-          ? DateTime.tryParse(json['att_date_out'])
-          : null,
+      attDateOut:
+          json['att_date_out'] != "0001-01-01T00:00:00Z"
+              ? DateTime.tryParse(json['att_date_out'])
+              : null,
       attPhotoIn: json['att_photo_in'],
       attPhotoOut: json['att_photo_out'],
       attLatitudeIn: json['att_latitude_in'],
@@ -76,5 +77,24 @@ class AllAttendanceResponse {
       ),
     );
   }
+}
 
+class AttendanceResponse {
+  final bool status;
+  final String message;
+  final Attendance data;
+
+  AttendanceResponse({
+    required this.status,
+    required this.message,
+    required this.data,
+  });
+
+  factory AttendanceResponse.fromJson(Map<String, dynamic> json) {
+    return AttendanceResponse(
+      status: json['status'],
+      message: json['message'],
+      data: Attendance.fromJson(json['data']),
+    );
+  }
 }

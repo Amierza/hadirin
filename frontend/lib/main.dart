@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/controllers/register_controller.dart';
 import 'package:frontend/controllers/sign_in_controller.dart';
+import 'package:frontend/middleware/auth_middleware.dart';
 import 'package:frontend/pages/edit_profile_page.dart';
+import 'package:frontend/pages/permission_page.dart';
 import 'package:frontend/pages/presence_history_page.dart';
 import 'package:frontend/pages/presence_page.dart';
 import 'package:frontend/pages/profile_page.dart';
@@ -28,7 +30,6 @@ Future<void> main() async {
 
   try {
     await GetStorage.init();
-    // Clean up old attendance data on app start
     await _cleanupOldAttendanceData();
   } catch (error) {
     print("Failed to initialize GetStorage: $error");
@@ -90,12 +91,36 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/forget-password', page: () => ForgetPasswordPage()),
         GetPage(name: '/rename-password', page: () => RenamePasswordPage()),
         GetPage(name: '/register', page: () => RegisterPage()),
-        GetPage(name: '/presence', page: () => PresencePage()),
-        GetPage(name: '/home', page: () => HomePage()),
-        GetPage(name: '/perizinan', page: () => HomePage()),
-        GetPage(name: '/profile', page: () => ProfilePage()),
-        GetPage(name: '/presence_history', page: () => PresenceHistoryPage()),
-        GetPage(name: '/edit_profile', page: () => EditProfilePage()),
+        GetPage(
+          name: '/presence',
+          page: () => PresencePage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: '/home',
+          page: () => HomePage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: '/perizinan',
+          page: () => PermissionPage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: '/profile',
+          page: () => ProfilePage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: '/presence_history',
+          page: () => PresenceHistoryPage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: '/edit_profile',
+          page: () => EditProfilePage(),
+          middlewares: [AuthMiddleware()],
+        ),
       ],
     );
   }
