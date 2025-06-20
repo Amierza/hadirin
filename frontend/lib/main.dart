@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:frontend/controllers/attendance_controller.dart';
 import 'package:frontend/controllers/register_controller.dart';
 import 'package:frontend/controllers/sign_in_controller.dart';
 import 'package:frontend/middleware/auth_middleware.dart';
@@ -16,8 +17,6 @@ import 'package:frontend/pages/rename_password_page.dart';
 import 'package:frontend/pages/register_page.dart';
 import 'package:frontend/pages/home_page.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:intl/intl.dart';
-import 'package:flutter/foundation.dart'; // Added this import
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +39,8 @@ Future<void> main() async {
 Future<Widget> buildApp() async {
   Get.lazyPut<RegisterController>(() => RegisterController(), fenix: false);
   Get.lazyPut<SignInController>(() => SignInController(), fenix: false);
+  Get.lazyPut<AttendanceController>(() => AttendanceController(), fenix: false);
+  Get.lazyPut<AttendanceTodayController>(() => AttendanceTodayController(), fenix: false);
 
   return const MyApp();
 }

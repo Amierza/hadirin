@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:frontend/controllers/attendance_controller.dart';
 import 'package:frontend/controllers/presence_controller.dart';
 import 'package:frontend/shared/theme.dart';
 import 'package:get/get.dart';
@@ -17,6 +18,9 @@ class PresencePage extends StatefulWidget {
 class _PresencePageState extends State<PresencePage> {
   File? _image;
   final PresenceController presenceController = Get.put(PresenceController());
+  final AttendanceController attendanceController = Get.put(
+    AttendanceController(),
+  );
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -158,7 +162,10 @@ class _PresencePageState extends State<PresencePage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _submitCheckIn,
+                        onPressed: () {
+                          _submitCheckIn();
+                          attendanceController.fetchAllAttendance();
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           foregroundColor: Colors.white,
@@ -172,7 +179,10 @@ class _PresencePageState extends State<PresencePage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _submitCheckOut,
+                        onPressed: () {
+                          _submitCheckOut();
+                          attendanceController.fetchAllAttendance();
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: dangerColor,
                           foregroundColor: Colors.white,

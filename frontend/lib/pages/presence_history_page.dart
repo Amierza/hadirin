@@ -36,8 +36,7 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final AttendanceController attendanceController =
-        Get.find<AttendanceController>();
+    final AttendanceController attendanceController = Get.put(AttendanceController());
 
     return Scaffold(
       backgroundColor: secondaryBackgroundColor,
@@ -179,7 +178,7 @@ class _PresenceHistoryPageState extends State<PresenceHistoryPage> {
 
     final date = dateFormat.format(dateTimeIn);
     final masuk = timeFormat.format(dateTimeIn);
-    final keluar = hasCheckedOut ? timeFormat.format(att.attDateOut!) : '-';
+    final keluar = hasCheckedOut ? timeFormat.format(att.attDateOut!.toLocal()) : '-';
 
     return AbsensiCard(
       date: date,
