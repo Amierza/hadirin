@@ -20,11 +20,24 @@ class _HomePageState extends State<HomePage> {
   int attendanceStreak = 0;
   final DateFormat dateFormat = DateFormat('MMMM d, yyyy');
   final DateFormat timeFormat = DateFormat('HH:mm:ss');
+  final attendanceTodayController = Get.find<AttendanceTodayController>();
+  final attendanceController = Get.find<AttendanceController>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchData();
+    });
+  }
+
+  Future<void> _fetchData() async {
+    await attendanceTodayController.fetchAttendanceToday();
+    await attendanceController.fetchAllAttendance();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final attendanceTodayController = Get.put(AttendanceTodayController());
-    final attendanceController = Get.put(AttendanceController());
     final now = DateTime.now();
 
     return Scaffold(
@@ -274,7 +287,7 @@ class _HomePageState extends State<HomePage> {
                                     final keluar =
                                         hasCheckedOut
                                             ? timeFormat.format(
-                                              data.attDateOut!,
+                                              data.attDateOut!.toLocal(),
                                             )
                                             : '-';
 

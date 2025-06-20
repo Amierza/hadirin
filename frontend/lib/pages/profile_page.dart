@@ -29,20 +29,21 @@ class ProfilePage extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      '$assetsUrl/user/${user?.userPhoto}',
-                      height: 138,
-                      width: 125,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.asset(
-                          'assets/muka_presensi.png',
-                          height: 138,
-                          width: 125,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    ),
+                    child:
+                        userController.selectedPhoto != null &&
+                                userController.selectedPhoto!.existsSync()
+                            ? Image.file(
+                              userController.selectedPhoto!,
+                              width: 120,
+                              height: 120,
+                              fit: BoxFit.cover,
+                            )
+                            : Image.asset(
+                              'assets/muka_presensi.png',
+                              height: 138,
+                              width: 125,
+                              fit: BoxFit.cover,
+                            ),
                   ),
 
                   const SizedBox(width: 12),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:frontend/models/attendance_model.dart';
 import 'package:frontend/models/error_model.dart';
 import 'package:frontend/services/attendance_service.dart';
@@ -28,7 +29,7 @@ class AttendanceController extends GetxController {
       final result = await AttendanceService.getAllAttendance(monthStr);
 
       if (result is AllAttendanceResponse) {
-        if (result.data.isEmpty) {
+        if ((result.data.isEmpty)) {
           isEmpty.value = true;
           return;
         }
@@ -46,11 +47,16 @@ class AttendanceController extends GetxController {
   }
 
   void filterByMonth(int month) {
-    filteredList.assignAll(
-      attendanceList.where((att) {
-        return att.attDateIn.month == month;
-      }).toList(),
-    );
+    if (attendanceList.isEmpty) return;
+
+    final filtered =
+        attendanceList.where((att) => att.attDateIn.month == month).toList();
+
+    if (!listEquals(filtered, filteredList)) {
+      filteredList.assignAll(filtered);
+    }
+
+    isEmpty.value = filteredList.isEmpty;
   }
 }
 
